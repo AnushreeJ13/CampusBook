@@ -1,0 +1,17 @@
+{
+  "name": "CampusBook",
+  "short_name": "CampusBook",
+  "description": "Smart Event Proposal & Venue Management Platform for Universities",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f3f7",
+  "theme_color": "#6c63ff",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📚</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
