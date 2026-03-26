@@ -5,7 +5,7 @@ import { ROLES } from '../../utils/constants';
 import {
   LayoutDashboard, MapPin, FileText, PlusCircle, ClipboardCheck,
   Bell, BarChart3, Users, ScrollText, Settings, LogOut, Eye,
-  Building2, ChevronLeft, ChevronRight, RefreshCw, Sparkles
+  Building2, ChevronLeft, ChevronRight, RefreshCw, Sparkles, X
 } from 'lucide-react';
 import { useState } from 'react';
 import './Sidebar.css';
@@ -41,7 +41,7 @@ const MENU_CONFIG = {
   ],
 };
 
-export default function Sidebar() {
+export default function Sidebar({ mobileOpen, setMobileOpen }) {
   const { user, logout, switchRole } = useAuth();
   const { resetData } = useProposals();
   const navigate = useNavigate();
@@ -64,24 +64,31 @@ export default function Sidebar() {
   };
 
   return (
-    <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''}`}>
-      {/* Logo */}
-      <div className="sidebar-logo">
-        <div className="sidebar-logo-icon">
-          <Sparkles size={22} />
-        </div>
-        {!collapsed && (
-          <div className="sidebar-logo-text">
-            <span className="sidebar-brand">CampusBook</span>
-            <span className="sidebar-role-tag">{user.role}</span>
+    <>
+      {mobileOpen && <div className="sidebar-mobile-overlay" onClick={() => setMobileOpen(false)} />}
+      <aside className={`sidebar ${collapsed ? 'sidebar-collapsed' : ''} ${mobileOpen ? 'sidebar-mobile-open' : ''}`}>
+        {/* Logo */}
+        <div className="sidebar-logo">
+          <div className="sidebar-logo-icon">
+            <Sparkles size={22} />
           </div>
-        )}
-      </div>
+          {!collapsed && (
+            <div className="sidebar-logo-text">
+              <span className="sidebar-brand">CampusBook</span>
+              <span className="sidebar-role-tag">{user.role}</span>
+            </div>
+          )}
+        </div>
 
-      {/* Collapse Toggle */}
-      <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)}>
-        {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
-      </button>
+        {/* Collapse Toggle */}
+        <button className="sidebar-toggle desktop-only" onClick={() => setCollapsed(!collapsed)}>
+          {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+        </button>
+
+        {/* Close Toggle (Mobile) */}
+        <button className="sidebar-close mobile-only" onClick={() => setMobileOpen(false)}>
+          <X size={20} />
+        </button>
 
       {/* Navigation */}
       <nav className="sidebar-nav">
@@ -90,6 +97,7 @@ export default function Sidebar() {
             key={item.to}
             to={item.to}
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
+            onClick={() => mobileOpen && setMobileOpen(false)}
           >
             <item.icon size={20} />
             {!collapsed && <span>{item.label}</span>}
@@ -146,5 +154,6 @@ export default function Sidebar() {
         </div>
       </div>
     </aside>
+    </>
   );
 }

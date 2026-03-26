@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { ProposalProvider } from './contexts/ProposalContext';
@@ -41,6 +42,7 @@ function DashboardRouter() {
 
 function AppLayout() {
   const { user } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   if (!user) {
     return (
@@ -53,8 +55,8 @@ function AppLayout() {
 
   return (
     <div className="app-layout">
-      <Sidebar />
-      <TopBar />
+      <Sidebar mobileOpen={mobileMenuOpen} setMobileOpen={setMobileMenuOpen} />
+      <TopBar onMenuClick={() => setMobileMenuOpen(true)} />
       <main className="main-content">
         <Routes>
           <Route path="/dashboard" element={<DashboardRouter />} />

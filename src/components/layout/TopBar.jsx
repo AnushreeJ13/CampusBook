@@ -1,12 +1,12 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
-import { Bell, Search, X, FileText, MapPin, Sparkles } from 'lucide-react';
+import { Bell, Search, X, FileText, MapPin, Sparkles, Menu } from 'lucide-react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './TopBar.css';
 
-export default function TopBar() {
+export default function TopBar({ onMenuClick }) {
   const { user, university } = useAuth();
   const { notifications, markNotificationRead, proposals } = useProposals();
   const { venues } = useVenues();
@@ -60,6 +60,9 @@ export default function TopBar() {
       <div className="topbar-left">
         {/* Mobile brand — visible when sidebar is hidden */}
         <div className="topbar-brand">
+          <button className="mobile-menu-btn" onClick={onMenuClick}>
+            <Menu size={20} />
+          </button>
           <div className="topbar-brand-icon"><Sparkles size={14} /></div>
           <span className="topbar-brand-name">CampusBook</span>
         </div>

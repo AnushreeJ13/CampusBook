@@ -226,6 +226,17 @@
 
 /* Brand hidden on desktop (sidebar shows it) */
 .topbar-brand { display: none; }
+.mobile-menu-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none; border: none;
+  color: var(--text-secondary);
+  padding: 6px;
+  margin-right: -4px;
+  border-radius: var(--radius-sm);
+}
+.mobile-menu-btn:hover { background: var(--bg-surface); color: var(--text-primary); }
 .topbar-brand-icon {
   width: 28px; height: 28px;
   border-radius: var(--radius-sm);
