@@ -14,17 +14,11 @@ export default function TopBar({ onMenuClick }) {
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearch, setShowSearch] = useState(false);
-  const [liveTime, setLiveTime] = useState(new Date());
   const notifRef = useRef(null);
   const searchRef = useRef(null);
 
   const userNotifs = notifications.filter(n => n.userId === user?.id);
   const unreadCount = userNotifs.filter(n => !n.read).length;
-
-  useEffect(() => {
-    const timer = setInterval(() => setLiveTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   useEffect(() => {
     const handleClick = (e) => {
@@ -35,7 +29,6 @@ export default function TopBar({ onMenuClick }) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
 
-  // — FUNCTIONAL SEARCH: searches proposals + venues live —
   const searchResults = useMemo(() => {
     if (!searchQuery || searchQuery.length < 2) return [];
     const q = searchQuery.toLowerCase();
@@ -52,13 +45,9 @@ export default function TopBar({ onMenuClick }) {
 
   if (!user) return null;
 
-  const timeStr = liveTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
-  const dateStr = liveTime.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-
   return (
     <header className="topbar">
       <div className="topbar-left">
-        {/* Mobile brand — visible when sidebar is hidden */}
         <div className="topbar-brand">
           <button className="mobile-menu-btn" onClick={onMenuClick}>
             <Menu size={20} />
@@ -81,7 +70,6 @@ export default function TopBar({ onMenuClick }) {
             onFocus={() => setShowSearch(true)}
             className="topbar-search-input"
           />
-          {/* Search Results Dropdown */}
           {showSearch && searchResults.length > 0 && (
             <div className="search-results-dropdown">
               {searchResults.map(r => (
@@ -110,11 +98,6 @@ export default function TopBar({ onMenuClick }) {
       </div>
 
       <div className="topbar-right">
-        <div className="topbar-clock">
-          <span className="topbar-clock-time">{timeStr}</span>
-          <span className="topbar-clock-date">{dateStr}</span>
-        </div>
-
         {/* Notifications */}
         <div className="topbar-notif-wrapper" ref={notifRef}>
           <button className="topbar-notif-btn" onClick={() => setShowNotifs(!showNotifs)}>
@@ -158,10 +141,10 @@ export default function TopBar({ onMenuClick }) {
           )}
         </div>
 
-        <div className="topbar-user">
+        <Link to="/profile" className="topbar-user" style={{textDecoration: 'none'}}>
           <span className="topbar-user-avatar">{user.avatar}</span>
           <span className="topbar-user-name">{user.name}</span>
-        </div>
+        </Link>
       </div>
     </header>
   );

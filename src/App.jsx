@@ -20,6 +20,7 @@ import ProposalDetail from './pages/ProposalDetail';
 import ProposalsList from './pages/ProposalsList';
 import PendingReviews from './pages/PendingReviews';
 import Notifications from './pages/Notifications';
+import Profile from './pages/Profile';
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -80,6 +81,7 @@ function AppLayout() {
           {/* Shared */}
           <Route path="/events" element={<ProtectedRoute><BrowseVenues /></ProtectedRoute>} />
           <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           {/* Catch-all */}
           <Route path="/login" element={<Navigate to="/dashboard" replace />} />

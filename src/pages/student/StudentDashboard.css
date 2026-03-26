@@ -1,0 +1,198 @@
+/* ============================================
+   STUDENT DASHBOARD — Professional SaaS Layout + AI UI
+   ============================================ */
+
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-xl) var(--space-2xl);
+}
+
+@media (max-width: 768px) { .page-container { padding: var(--space-lg); } }
+
+/* ---------- Hero Section ---------- */
+.student-hero {
+  position: relative;
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  color: white;
+  overflow: hidden;
+  background: linear-gradient(135deg, #6c63ff 0%, #8b83ff 40%, #a78bfa 70%, #c4b5fd 100%);
+  margin-bottom: var(--space-2xl);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+
+.student-hero-content { position: relative; z-index: 2; }
+
+.student-greeting {
+  font-size: var(--font-sm);
+  opacity: 0.85;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+
+.student-hero h1 {
+  font-size: var(--font-3xl);
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 6px;
+}
+
+.student-hero-sub {
+  font-size: var(--font-base);
+  opacity: 0.9;
+  font-weight: 500;
+}
+
+.student-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.05);
+  filter: blur(40px);
+}
+.student-blob-1 { width: 300px; height: 300px; top: -100px; right: -50px; background: rgba(255,255,255,0.1); }
+.student-blob-2 { width: 250px; height: 250px; bottom: -80px; left: 10%; background: rgba(255,255,255,0.05); }
+
+/* ---------- Stat Cards (Clean SaaS Style) ---------- */
+.student-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+@media (max-width: 1024px) { .student-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.student-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+}
+
+.student-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+  border-color: var(--border-active);
+}
+
+.student-stat-icon {
+  width: 48px; height: 48px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.student-stat-info { display: flex; flex-direction: column; }
+.student-stat-value { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); line-height: 1; margin-bottom: 4px; }
+.student-stat-label { font-size: var(--font-sm); font-weight: 600; color: var(--text-secondary); }
+
+/* ---------- AI Recommendation Engine ---------- */
+.ai-recommendation-section {
+  background: linear-gradient(to right, #fdf4ff, #faf5ff);
+  border: 1px solid #f0abfc;
+  border-radius: 20px;
+  padding: var(--space-xl);
+  margin-bottom: var(--space-2xl);
+}
+
+.ai-badge {
+  background: linear-gradient(135deg, #d946ef 0%, #c026d3 100%);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ai-recommendation-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  margin-top: var(--space-md);
+}
+@media (max-width: 768px) { .ai-recommendation-grid { grid-template-columns: 1fr; } }
+
+.ai-card {
+  background: white;
+  border: 1px solid #fdf4ff;
+  border-radius: 16px;
+  padding: var(--space-lg);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  text-decoration: none;
+}
+.ai-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -5px rgba(217, 70, 239, 0.15);
+  border-color: #f0abfc;
+}
+
+.match-score-badge {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: #fdf4ff; border-radius: 12px; padding: 12px;
+  border: 1px solid #fae8ff; min-width: 64px;
+}
+.match-score { font-size: 20px; font-weight: 900; color: #c026d3; line-height: 1; }
+.match-label { font-size: 10px; font-weight: 700; color: #d946ef; text-transform: uppercase; margin-top: 4px; }
+
+/* ---------- Grid Layouts for Events/Venues ---------- */
+.student-section-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+.student-section-header h2 { font-size: var(--font-lg); font-weight: 800; color: var(--text-primary); }
+
+.student-events-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg);
+}
+@media (max-width: 1024px) { .student-events-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) { .student-events-grid { grid-template-columns: 1fr; } }
+
+.student-event-card, .student-venue-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: 20px;
+  padding: var(--space-xl);
+  transition: all 0.3s;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);
+  text-decoration: none;
+  display: flex; flex-direction: column;
+}
+.student-event-card:hover, .student-venue-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px -5px rgba(0,0,0,0.08);
+  border-color: var(--border-secondary);
+}
+
+.student-event-icon-box, .student-venue-icon-box {
+  width: 44px; height: 44px; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--bg-surface); color: var(--text-secondary);
+}
+
+.student-event-title { font-size: var(--font-base); font-weight: 800; color: var(--text-primary); margin-bottom: 2px; }
+.student-event-club { font-size: var(--font-xs); color: var(--text-tertiary); font-weight: 500; }
+
+.student-event-details {
+  display: flex; flex-direction: column; gap: 8px; font-size: var(--font-sm);
+  color: var(--text-secondary); border-top: 1px solid var(--border-primary);
+  padding-top: var(--space-md); margin-top: auto;
+}
+
+@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+.animate-card-entrance { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }

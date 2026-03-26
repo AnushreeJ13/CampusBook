@@ -2,15 +2,21 @@
   position: fixed;
   left: 0; top: 0; bottom: 0;
   width: var(--sidebar-width);
-  background: var(--bg-secondary);
+  background: var(--bg-primary); /* Will be overridden by body classes */
   border-right: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
   z-index: 150;
-  transition: width var(--transition-base);
+  transition: width var(--transition-base), background var(--transition-base);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
 }
+
+/* Role-specific Sidebar Backgrounds */
+body.role-student .sidebar { background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(108, 99, 255, 0.03) 100%); }
+body.role-admin .sidebar { background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(42, 201, 168, 0.03) 100%); }
+body.role-faculty .sidebar { background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(245, 165, 36, 0.03) 100%); }
+body.role-society .sidebar { background: linear-gradient(180deg, var(--bg-primary) 0%, rgba(232, 93, 155, 0.03) 100%); }
 
 .sidebar-collapsed { width: var(--sidebar-collapsed); }
 
@@ -27,13 +33,14 @@
 .sidebar-logo-icon {
   width: 40px; height: 40px;
   border-radius: var(--radius-md);
-  background: linear-gradient(135deg, #6c63ff, #e85d9b);
+  background: var(--accent); /* Uses role accent */
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(108, 99, 255, 0.2);
+  box-shadow: 0 4px 12px var(--accent-glow);
+  transition: all var(--transition-base);
 }
 
 .sidebar-logo-text { display: flex; flex-direction: column; overflow: hidden; }
@@ -95,17 +102,31 @@
   font-weight: 500;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  position: relative;
+  overflow: hidden;
 }
 
 .sidebar-link:hover {
   background: var(--bg-surface);
   color: var(--text-primary);
+  transform: translateX(4px);
 }
 
 .sidebar-link.active {
   background: var(--accent-soft);
   color: var(--accent);
   font-weight: 700;
+}
+
+.sidebar-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--accent);
+  border-radius: 0 4px 4px 0;
 }
 
 /* Bottom */

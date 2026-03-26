@@ -1,0 +1,441 @@
+{
+  "proposals": [
+    {
+      "id": "p1",
+      "title": "CodeFest 2026 — Annual Hackathon",
+      "eventType": "hackathon",
+      "description": "A 24-hour coding marathon where students build innovative solutions to real-world problems. Teams of 2-4 compete for prizes. Includes mentoring sessions, workshops, and networking with industry professionals.",
+      "expectedAttendees": 120,
+      "date": "2026-04-05",
+      "timeSlot": "morning_1",
+      "venueId": "v2",
+      "clubId": "c1",
+      "clubName": "Tech Society",
+      "submittedBy": "u2",
+      "submittedByName": "Riya Sharma",
+      "resources": "Projector, Wi-Fi access, Power strips, Snacks & drinks for participants, Prizes for top 3 teams",
+      "documents": [
+        {
+          "name": "sponsor_letter.pdf",
+          "type": "pdf"
+        },
+        {
+          "name": "event_poster.png",
+          "type": "image"
+        }
+      ],
+      "status": "faculty_review",
+      "currentReviewer": "u4",
+      "createdAt": "2026-03-23",
+      "updatedAt": "2026-03-25",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u2",
+          "byName": "Riya Sharma",
+          "at": "2026-03-23",
+          "note": "Proposal created"
+        },
+        {
+          "action": "submitted",
+          "by": "u2",
+          "byName": "Riya Sharma",
+          "at": "2026-03-24",
+          "note": "Submitted for review"
+        },
+        {
+          "action": "forwarded",
+          "by": "system",
+          "byName": "System",
+          "at": "2026-03-24",
+          "note": "Forwarded to Faculty Advisor Dr. Priya Kapoor"
+        }
+      ]
+    },
+    {
+      "id": "p2",
+      "title": "Rhythm & Blues — Cultural Night",
+      "eventType": "cultural",
+      "description": "An evening of music, dance and drama performances by various student groups. Features live band performance, solo and group dance competitions, and a stand-up comedy segment.",
+      "expectedAttendees": 400,
+      "date": "2026-04-10",
+      "timeSlot": "evening_2",
+      "venueId": "v1",
+      "clubId": "c2",
+      "clubName": "Cultural Club",
+      "submittedBy": "u3",
+      "submittedByName": "Arjun Mehta",
+      "resources": "Stage Lighting (extra), Sound system with 4 mics, Green room access, 200 chairs for audience",
+      "documents": [
+        {
+          "name": "event_schedule.pdf",
+          "type": "pdf"
+        }
+      ],
+      "status": "admin_review",
+      "currentReviewer": "u6",
+      "createdAt": "2026-03-19",
+      "updatedAt": "2026-03-24",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u3",
+          "byName": "Arjun Mehta",
+          "at": "2026-03-19",
+          "note": "Proposal created"
+        },
+        {
+          "action": "submitted",
+          "by": "u3",
+          "byName": "Arjun Mehta",
+          "at": "2026-03-20",
+          "note": "Submitted for review"
+        },
+        {
+          "action": "approved",
+          "by": "u4",
+          "byName": "Dr. Priya Kapoor",
+          "at": "2026-03-22",
+          "note": "Approved. Great lineup planned."
+        },
+        {
+          "action": "forwarded",
+          "by": "u4",
+          "byName": "Dr. Priya Kapoor",
+          "at": "2026-03-22",
+          "note": "Forwarded to HoD"
+        },
+        {
+          "action": "approved",
+          "by": "system",
+          "byName": "HoD (Auto)",
+          "at": "2026-03-23",
+          "note": "HoD approved"
+        },
+        {
+          "action": "forwarded",
+          "by": "system",
+          "byName": "System",
+          "at": "2026-03-23",
+          "note": "Forwarded to Admin"
+        }
+      ]
+    },
+    {
+      "id": "p3",
+      "title": "Inter-College Cricket Tournament",
+      "eventType": "sports",
+      "description": "Annual inter-college cricket tournament featuring 8 college teams. Two-day event with league matches and knock-out rounds.",
+      "expectedAttendees": 300,
+      "date": "2026-04-15",
+      "timeSlot": "morning_1",
+      "venueId": "v3",
+      "clubId": "c3",
+      "clubName": "Sports Committee",
+      "submittedBy": "u7",
+      "submittedByName": "Neha Gupta",
+      "resources": "Cricket kits, Scoreboard, First-aid kit, Trophies, Tent & seating for audience",
+      "documents": [
+        {
+          "name": "team_registrations.xlsx",
+          "type": "doc"
+        },
+        {
+          "name": "rules.pdf",
+          "type": "pdf"
+        }
+      ],
+      "status": "approved",
+      "currentReviewer": null,
+      "createdAt": "2026-03-12",
+      "updatedAt": "2026-03-21",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u7",
+          "byName": "Neha Gupta",
+          "at": "2026-03-12",
+          "note": "Proposal created"
+        },
+        {
+          "action": "submitted",
+          "by": "u7",
+          "byName": "Neha Gupta",
+          "at": "2026-03-13",
+          "note": "Submitted for review"
+        },
+        {
+          "action": "approved",
+          "by": "u5",
+          "byName": "Dr. Rajesh Nair",
+          "at": "2026-03-15",
+          "note": "Approved. Ensure safety measures are in place."
+        },
+        {
+          "action": "approved",
+          "by": "system",
+          "byName": "HoD (Auto)",
+          "at": "2026-03-17",
+          "note": "HoD approved"
+        },
+        {
+          "action": "approved",
+          "by": "u6",
+          "byName": "Vikram Singh",
+          "at": "2026-03-19",
+          "note": "Admin approved. Venue booked."
+        },
+        {
+          "action": "venue_booked",
+          "by": "system",
+          "byName": "System",
+          "at": "2026-03-19",
+          "note": "Open Air Theatre booked for the event"
+        }
+      ]
+    },
+    {
+      "id": "p4",
+      "title": "AI & Machine Learning Workshop",
+      "eventType": "workshop",
+      "description": "Hands-on workshop covering fundamentals of machine learning, neural networks, and practical applications using Python and TensorFlow. Includes a mini-project session.",
+      "expectedAttendees": 35,
+      "date": "2026-03-31",
+      "timeSlot": "afternoon_2",
+      "venueId": "v6",
+      "clubId": "c1",
+      "clubName": "Tech Society",
+      "submittedBy": "u2",
+      "submittedByName": "Riya Sharma",
+      "resources": "Lab PCs with Python/TensorFlow pre-installed, Projector, Printed handouts",
+      "documents": [
+        {
+          "name": "speaker_bio.pdf",
+          "type": "pdf"
+        },
+        {
+          "name": "workshop_outline.pdf",
+          "type": "pdf"
+        }
+      ],
+      "status": "venue_booked",
+      "currentReviewer": null,
+      "createdAt": "2026-03-06",
+      "updatedAt": "2026-03-16",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u2",
+          "byName": "Riya Sharma",
+          "at": "2026-03-06",
+          "note": "Proposal created"
+        },
+        {
+          "action": "submitted",
+          "by": "u2",
+          "byName": "Riya Sharma",
+          "at": "2026-03-07",
+          "note": "Submitted for review"
+        },
+        {
+          "action": "approved",
+          "by": "u4",
+          "byName": "Dr. Priya Kapoor",
+          "at": "2026-03-09",
+          "note": "Excellent initiative. Approved."
+        },
+        {
+          "action": "approved",
+          "by": "system",
+          "byName": "HoD (Auto)",
+          "at": "2026-03-11",
+          "note": "HoD approved"
+        },
+        {
+          "action": "approved",
+          "by": "u6",
+          "byName": "Vikram Singh",
+          "at": "2026-03-14",
+          "note": "Approved and venue confirmed."
+        },
+        {
+          "action": "venue_booked",
+          "by": "system",
+          "byName": "System",
+          "at": "2026-03-14",
+          "note": "Computer Lab 1 booked."
+        }
+      ]
+    },
+    {
+      "id": "p5",
+      "title": "Startup Pitch Night",
+      "eventType": "talk",
+      "description": "Students present their startup ideas to a panel of entrepreneurs and VCs. Top 3 ideas receive seed funding support.",
+      "expectedAttendees": 80,
+      "date": "2026-04-20",
+      "timeSlot": "evening_1",
+      "venueId": "v2",
+      "clubId": "c1",
+      "clubName": "Tech Society",
+      "submittedBy": "u2",
+      "submittedByName": "Riya Sharma",
+      "resources": "Projector, Stage mic, Timer display, Refreshments",
+      "documents": [],
+      "status": "draft",
+      "currentReviewer": null,
+      "createdAt": "2026-03-25",
+      "updatedAt": "2026-03-25",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u2",
+          "byName": "Riya Sharma",
+          "at": "2026-03-25",
+          "note": "Draft created"
+        }
+      ]
+    },
+    {
+      "id": "p6",
+      "title": "Annual Day Celebration",
+      "eventType": "fest",
+      "description": "Grand celebration of the university founding day with cultural performances, guest speeches, and award ceremony for outstanding students and faculty members.",
+      "expectedAttendees": 450,
+      "date": "2026-04-03",
+      "timeSlot": "afternoon_1",
+      "venueId": "v1",
+      "clubId": "c2",
+      "clubName": "Cultural Club",
+      "submittedBy": "u3",
+      "submittedByName": "Arjun Mehta",
+      "resources": "Full stage setup, Sound system, Flower decorations, Guest seating arrangement, Awards/trophies",
+      "documents": [
+        {
+          "name": "guest_list.pdf",
+          "type": "pdf"
+        },
+        {
+          "name": "event_schedule.pdf",
+          "type": "pdf"
+        }
+      ],
+      "status": "revision_requested",
+      "currentReviewer": "u4",
+      "createdAt": "2026-03-16",
+      "updatedAt": "2026-03-22",
+      "auditTrail": [
+        {
+          "action": "created",
+          "by": "u3",
+          "byName": "Arjun Mehta",
+          "at": "2026-03-16",
+          "note": "Proposal created"
+        },
+        {
+          "action": "submitted",
+          "by": "u3",
+          "byName": "Arjun Mehta",
+          "at": "2026-03-17",
+          "note": "Submitted for review"
+        },
+        {
+          "action": "revision_requested",
+          "by": "u4",
+          "byName": "Dr. Priya Kapoor",
+          "at": "2026-03-22",
+          "note": "Please add detailed budget breakdown and confirm guest speaker availability."
+        }
+      ]
+    }
+  ],
+  "notifications": [
+    {
+      "id": "n1",
+      "userId": "u2",
+      "type": "revision",
+      "title": "Revision Requested",
+      "message": "Dr. Priya Kapoor has requested changes to \"Annual Day Celebration\"",
+      "proposalId": "p6",
+      "read": false,
+      "createdAt": "2026-03-22"
+    },
+    {
+      "id": "n2",
+      "userId": "u2",
+      "type": "booking",
+      "title": "Venue Booked!",
+      "message": "Computer Lab 1 has been booked for \"AI & ML Workshop\"",
+      "proposalId": "p4",
+      "read": true,
+      "createdAt": "2026-03-14"
+    },
+    {
+      "id": "n3",
+      "userId": "u4",
+      "type": "submission",
+      "title": "New Proposal",
+      "message": "Tech Society submitted \"CodeFest 2026 — Annual Hackathon\" for review",
+      "proposalId": "p1",
+      "read": false,
+      "createdAt": "2026-03-24"
+    },
+    {
+      "id": "n4",
+      "userId": "u6",
+      "type": "approval",
+      "title": "Pending Approval",
+      "message": "\"Rhythm & Blues — Cultural Night\" is awaiting your final approval",
+      "proposalId": "p2",
+      "read": false,
+      "createdAt": "2026-03-23"
+    },
+    {
+      "id": "n5",
+      "userId": "u3",
+      "type": "revision",
+      "title": "Revision Requested",
+      "message": "Dr. Priya Kapoor has requested changes to \"Annual Day Celebration\"",
+      "proposalId": "p6",
+      "read": false,
+      "createdAt": "2026-03-22"
+    },
+    {
+      "id": "n6",
+      "userId": "u7",
+      "type": "approval",
+      "title": "Proposal Approved!",
+      "message": "\"Inter-College Cricket Tournament\" has been fully approved and venue is booked",
+      "proposalId": "p3",
+      "read": true,
+      "createdAt": "2026-03-19"
+    }
+  ],
+  "bookings": [
+    {
+      "id": "b1",
+      "venueId": "v3",
+      "proposalId": "p3",
+      "date": "2026-04-15",
+      "timeSlot": "morning_1",
+      "status": "confirmed"
+    },
+    {
+      "id": "b2",
+      "venueId": "v6",
+      "proposalId": "p4",
+      "date": "2026-03-31",
+      "timeSlot": "afternoon_2",
+      "status": "confirmed"
+    },
+    {
+      "id": "b3",
+      "venueId": "v1",
+      "proposalId": null,
+      "date": "2026-03-29",
+      "timeSlot": "morning_2",
+      "status": "maintenance",
+      "note": "Scheduled maintenance"
+    }
+  ]
+}

@@ -16,6 +16,17 @@
   transition: left var(--transition-base);
 }
 
+/* Role-themed accent line at top */
+.topbar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  z-index: 91;
+  transition: background var(--transition-base);
+}
+
 .topbar-left { display: flex; align-items: center; gap: var(--space-md); }
 
 .topbar-university {
@@ -49,7 +60,7 @@
 
 .topbar-search-input:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 3px var(--accent-glow);
   background: white;
 }
 

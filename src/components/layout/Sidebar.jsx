@@ -1,4 +1,4 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { ROLES } from '../../utils/constants';
@@ -138,7 +138,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         )}
 
         {/* User Info */}
-        <div className="sidebar-user">
+        <Link to="/profile" className="sidebar-user" style={{textDecoration: 'none'}}>
           <div className="sidebar-user-avatar">{user.avatar}</div>
           {!collapsed && (
             <div className="sidebar-user-info">
@@ -147,11 +147,11 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
             </div>
           )}
           {!collapsed && (
-            <button className="sidebar-logout" onClick={handleLogout} title="Logout">
+            <button className="sidebar-logout" onClick={(e) => { e.preventDefault(); handleLogout(); }} title="Logout">
               <LogOut size={18} />
             </button>
           )}
-        </div>
+        </Link>
       </div>
     </aside>
     </>

@@ -1,0 +1,380 @@
+/* ============================================
+   ADMIN DASHBOARD — "Command Center"
+   Teal-emerald, sleek data panels, authority
+   ============================================ */
+
+/* ---------- Hero Section ---------- */
+.admin-hero {
+  position: relative;
+  border-radius: var(--radius-xl);
+  padding: var(--space-2xl);
+  color: white;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0f766e 0%, #2ac9a8 40%, #34d399 80%, #6ee7b7 100%);
+  background-size: 300% 300%;
+  animation: gradientShift 12s ease infinite;
+  margin-bottom: var(--space-2xl);
+}
+
+.admin-hero-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.admin-hero h1 {
+  font-size: var(--font-2xl);
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  animation: textReveal 0.5s ease forwards;
+}
+
+.admin-hero p {
+  font-size: var(--font-sm);
+  opacity: 0.85;
+  animation: textReveal 0.5s ease 0.1s forwards;
+  opacity: 0;
+}
+
+.admin-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: var(--radius-full);
+  font-size: var(--font-xs);
+  font-weight: 600;
+  color: white;
+  animation: scaleIn 0.4s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.admin-hero-badge .live-dot {
+  background: #a7f3d0;
+}
+
+/* Decorative elements */
+.admin-blob {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.08);
+  animation: floatSlow 16s ease-in-out infinite, morphBlob 20s ease-in-out infinite;
+}
+
+.admin-blob-1 {
+  width: 250px; height: 250px;
+  top: -100px; right: -60px;
+}
+
+.admin-blob-2 {
+  width: 180px; height: 180px;
+  bottom: -80px; left: -40px;
+  animation-delay: -6s;
+}
+
+/* Grid pattern overlay */
+.admin-hero::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
+}
+
+/* ---------- Stats Grid ---------- */
+.admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.admin-stat {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-xs);
+  border-left: 4px solid var(--accent-admin);
+}
+
+.admin-stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 28px rgba(42, 201, 168, 0.1);
+}
+
+.admin-stat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.admin-stat-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.admin-stat:hover .admin-stat-icon {
+  transform: scale(1.1);
+}
+
+.admin-stat-value {
+  font-size: var(--font-2xl);
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.admin-stat-label {
+  font-size: var(--font-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Color variants */
+.admin-stat--proposals { border-left-color: #8B5CF6; }
+.admin-stat--pending { border-left-color: #F59E0B; }
+.admin-stat--approved { border-left-color: #22C55E; }
+.admin-stat--venues { border-left-color: var(--accent-admin); }
+
+/* ---------- Charts Section ---------- */
+.admin-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-lg);
+  margin-bottom: var(--space-2xl);
+}
+
+.admin-chart-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-xs);
+  transition: all 0.3s ease;
+}
+
+.admin-chart-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.admin-chart-title {
+  font-size: var(--font-base);
+  font-weight: 700;
+  margin-bottom: var(--space-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.admin-chart-title::before {
+  content: '';
+  width: 4px; height: 18px;
+  border-radius: var(--radius-full);
+  background: var(--accent-admin);
+}
+
+/* ---------- Pending Approvals ---------- */
+.admin-pending-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.admin-pending-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.admin-pending-header h2 {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.admin-pending-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--status-warning);
+  color: white;
+  font-size: var(--font-xs);
+  font-weight: 700;
+  animation: bounceIn 0.5s ease;
+}
+
+.admin-pending-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg) var(--space-xl);
+  margin-bottom: var(--space-md);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-xs);
+}
+
+.admin-pending-card:hover {
+  border-color: rgba(42, 201, 168, 0.3);
+  box-shadow: 0 4px 16px rgba(42, 201, 168, 0.08);
+  transform: translateX(4px);
+}
+
+.admin-pending-info {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+}
+
+.admin-pending-emoji {
+  font-size: 24px;
+}
+
+.admin-pending-title {
+  font-size: var(--font-sm);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.admin-pending-meta {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+/* ---------- Quick Links ---------- */
+.admin-quick-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+.admin-quick-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-xl);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: var(--shadow-xs);
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-quick-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-admin), var(--accent-admin-light));
+  transform: scaleX(0);
+  transition: transform 0.3s ease;
+  transform-origin: left;
+}
+
+.admin-quick-link:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lg);
+}
+
+.admin-quick-link:hover::after {
+  transform: scaleX(1);
+}
+
+.admin-quick-link-info h3 {
+  font-size: var(--font-sm);
+  font-weight: 700;
+}
+
+.admin-quick-link-info p {
+  font-size: var(--font-xs);
+  color: var(--text-tertiary);
+}
+
+.admin-quick-link-arrow {
+  margin-left: auto;
+  color: var(--text-tertiary);
+  transition: transform 0.3s ease;
+}
+
+.admin-quick-link:hover .admin-quick-link-arrow {
+  transform: translateX(4px);
+  color: var(--accent-admin);
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 1024px) {
+  .admin-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .admin-charts-grid { grid-template-columns: 1fr; }
+  .admin-hero { padding: var(--space-xl); }
+  .admin-hero h1 { font-size: var(--font-xl); }
+  .admin-hero-content { flex-direction: column; align-items: flex-start; gap: var(--space-md); }
+}
+
+@media (max-width: 768px) {
+  .admin-hero {
+    border-radius: var(--radius-lg);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-lg);
+  }
+  .admin-hero h1 { font-size: var(--font-lg); }
+  .admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+  .admin-stat {
+    padding: var(--space-lg);
+    border-radius: var(--radius-md);
+  }
+  .admin-stat-value { font-size: var(--font-xl); }
+  .admin-stat-icon { width: 36px; height: 36px; }
+  .admin-quick-links { grid-template-columns: 1fr; }
+  .admin-quick-link { padding: var(--space-lg); border-radius: var(--radius-md); }
+  .admin-pending-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
+  .admin-pending-card .btn { align-self: flex-end; }
+}
+
+@media (max-width: 480px) {
+  .admin-hero { padding: var(--space-md); border-radius: var(--radius-md); }
+  .admin-hero h1 { font-size: var(--font-md); }
+  .admin-stat { padding: var(--space-md); }
+  .admin-stat-value { font-size: var(--font-lg); }
+  .admin-pending-card { padding: var(--space-md); }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .admin-stat:hover { transform: none; }
+  .admin-pending-card:hover { transform: none; }
+  .admin-quick-link:hover { transform: none; }
+}

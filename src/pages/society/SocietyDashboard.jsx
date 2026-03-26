@@ -2,12 +2,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { PROPOSAL_STATUS, STATUS_LABELS } from '../../utils/constants';
-import { PlusCircle, FileText, CheckCircle, XCircle, Clock, AlertTriangle, ArrowRight } from 'lucide-react';
+import { PlusCircle, FileText, CheckCircle, XCircle, Clock, AlertTriangle, ArrowRight, Calendar, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import './SocietyDashboard.css';
 
 export default function SocietyDashboard() {
   const { user } = useAuth();
   const { proposals } = useProposals();
+  const { venues } = useVenues();
 
   const myProposals = proposals.filter(p => p.clubId === user.clubId);
   const approved = myProposals.filter(p => [PROPOSAL_STATUS.APPROVED, PROPOSAL_STATUS.VENUE_BOOKED].includes(p.status));
@@ -32,116 +34,129 @@ export default function SocietyDashboard() {
 
   return (
     <div className="page-container">
-      <div className="page-header">
-        <div className="flex items-center justify-between">
+      {/* Hero Header */}
+      <div className="society-hero">
+        <div className="society-hero-content">
           <div>
-            <h1>{user.clubName} Dashboard</h1>
-            <p>Manage your event proposals and track their progress</p>
+            <p className="society-greeting">Club Dashboard</p>
+            <h1>{user.assignedClubs?.[0] || 'My Society'}</h1>
+            <p className="society-subtitle">Manage your events, proposals, and track approvals.</p>
           </div>
-          <Link to="/proposals/new" className="btn btn-primary btn-lg">
-            <PlusCircle size={20} /> New Proposal
+          <Link to="/proposals/new" className="btn btn-primary society-new-btn">
+            <PlusCircle size={20} />
+            <span>New Event</span>
           </Link>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-4 gap-lg" style={{ marginBottom: 'var(--space-2xl)' }}>
-        <div className="stat-card animate-fade-in-up stagger-1">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon"><FileText size={20} /></div>
+      <div className="society-stats-grid">
+        <div className="society-stat stagger-1">
+          <div className="society-stat-icon society-stat-icon--total">
+            <FileText size={20} strokeWidth={2.5} />
           </div>
-          <div className="stat-value">{myProposals.length}</div>
-          <div className="stat-label">Total Proposals</div>
+          <div className="society-stat-info">
+            <div className="society-stat-value">{myProposals.length}</div>
+            <div className="society-stat-label">Total Proposals</div>
+          </div>
         </div>
-        <div className="stat-card animate-fade-in-up stagger-2">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--status-success)' }}><CheckCircle size={20} /></div>
+        
+        <div className="society-stat stagger-2">
+          <div className="society-stat-icon society-stat-icon--approved">
+            <CheckCircle size={20} strokeWidth={2.5} />
           </div>
-          <div className="stat-value">{approved.length}</div>
-          <div className="stat-label">Approved</div>
+          <div className="society-stat-info">
+            <div className="society-stat-value">{approved.length}</div>
+            <div className="society-stat-label">Events Approved</div>
+          </div>
         </div>
-        <div className="stat-card animate-fade-in-up stagger-3">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon" style={{ background: 'rgba(245,158,11,0.1)', color: 'var(--status-warning)' }}><Clock size={20} /></div>
+        
+        <div className="society-stat stagger-3">
+          <div className="society-stat-icon society-stat-icon--pending">
+            <Clock size={20} strokeWidth={2.5} />
           </div>
-          <div className="stat-value">{pending.length}</div>
-          <div className="stat-label">Pending Review</div>
+          <div className="society-stat-info">
+            <div className="society-stat-value">{pending.length}</div>
+            <div className="society-stat-label">In Review</div>
+          </div>
         </div>
-        <div className="stat-card animate-fade-in-up stagger-4">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon" style={{ background: 'rgba(239,68,68,0.1)', color: 'var(--status-error)' }}><XCircle size={20} /></div>
+        
+        <div className="society-stat stagger-4">
+          <div className="society-stat-icon society-stat-icon--rejected">
+            <XCircle size={20} strokeWidth={2.5} />
           </div>
-          <div className="stat-value">{rejected.length}</div>
-          <div className="stat-label">Rejected</div>
+          <div className="society-stat-info">
+            <div className="society-stat-value">{needsRevision.length}</div>
+            <div className="society-stat-label">Needs Revision</div>
+          </div>
         </div>
       </div>
 
       {/* Needs Revision Alert */}
       {needsRevision.length > 0 && (
-        <div className="card animate-fade-in-up" style={{
-          marginBottom: 'var(--space-2xl)',
-          borderColor: 'rgba(245,158,11,0.3)',
-          background: 'rgba(245,158,11,0.05)'
-        }}>
-          <div className="flex items-center gap-md" style={{ marginBottom: 'var(--space-md)' }}>
-            <AlertTriangle size={20} color="var(--status-warning)" />
-            <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700, color: 'var(--status-warning)' }}>
-              Revision Requested ({needsRevision.length})
-            </h3>
+        <div className="society-revision-alert stagger-5">
+          <div className="society-revision-header">
+            <AlertTriangle size={20} />
+            Action Required ({needsRevision.length})
           </div>
-          {needsRevision.map(p => (
-            <div key={p.id} className="flex items-center justify-between" style={{ padding: 'var(--space-sm) 0' }}>
-              <div>
-                <span style={{ fontWeight: 600, fontSize: 'var(--font-sm)' }}>{p.title}</span>
-                <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginTop: 2 }}>
-                  {p.auditTrail[p.auditTrail.length - 1]?.note}
-                </p>
+          <div>
+            {needsRevision.map(p => (
+              <div key={p.id} className="society-revision-item">
+                <div className="society-revision-info">
+                  <span className="society-revision-title">{p.title}</span>
+                  <span className="society-revision-note">{p.feedback || 'Please update the proposal based on reviewer feedback.'}</span>
+                </div>
+                <Link to={`/proposals/${p.id}/edit`} className="btn btn-sm" style={{ background: 'var(--status-warning)', color: 'white' }}>
+                  Revise Now
+                </Link>
               </div>
-              <Link to={`/proposals/${p.id}`} className="btn btn-secondary btn-sm">
-                View <ArrowRight size={14} />
-              </Link>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
 
       {/* Recent Proposals */}
-      <div>
-        <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-lg)' }}>
-          <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: 700 }}>Recent Proposals</h2>
+      <div className="society-proposals-section">
+        <div className="society-section-header">
+          <h2>Recent Proposals</h2>
           <Link to="/proposals" className="btn btn-ghost btn-sm">View All →</Link>
         </div>
-
-        <div className="table-container">
-          <table className="table table-wide">
-            <thead>
-              <tr>
-                <th>Event</th>
-                <th>Type</th>
-                <th>Date</th>
-                <th>Attendees</th>
-                <th>Status</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {myProposals.slice(0, 5).map(p => (
-                <tr key={p.id}>
-                  <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{p.title}</td>
-                  <td><span className="badge badge-accent">{p.eventType}</span></td>
-                  <td>{p.date}</td>
-                  <td>{p.expectedAttendees}</td>
-                  <td><span className={`badge ${getStatusBadge(p.status)}`}>{STATUS_LABELS[p.status]}</span></td>
-                  <td>
-                    <Link to={`/proposals/${p.id}`} className="btn btn-ghost btn-sm">
-                      View <ArrowRight size={14} />
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        
+        {myProposals.length === 0 ? (
+          <div className="card text-center animate-fade-in" style={{ padding: 'var(--space-3xl) var(--space-xl)' }}>
+            <div className="flex justify-center" style={{ marginBottom: 'var(--space-lg)' }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <FileText size={32} color="var(--text-tertiary)" />
+              </div>
+            </div>
+            <h3 style={{ fontSize: 'var(--font-lg)', fontWeight: 700, marginBottom: 'var(--space-sm)' }}>No Proposals Yet</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: 'var(--space-lg)' }}>Create your first event proposal to get started.</p>
+            <Link to="/proposals/new" className="btn btn-primary">Create Proposal</Link>
+          </div>
+        ) : (
+          <div className="society-proposal-cards">
+            {myProposals.slice(0, 5).map((p, i) => {
+              const venue = venues.find(v => v.id === p.venueId);
+              return (
+                <Link to={`/proposals/${p.id}`} key={p.id} className="society-proposal-card animate-slide-up stagger-1" style={{ animationDelay: `${(i+5) * 0.1}s` }}>
+                  <div className="society-proposal-card-top">
+                    <h3 className="society-proposal-card-title">{p.title}</h3>
+                    <ChevronRight size={20} className="society-proposal-card-arrow" />
+                  </div>
+                  <div className="society-proposal-card-meta">
+                    <span className={`badge ${p.status === PROPOSAL_STATUS.VENUE_BOOKED ? 'badge-success' : p.status === PROPOSAL_STATUS.REJECTED ? 'badge-error' : p.status === PROPOSAL_STATUS.NEEDS_REVISION ? 'badge-warning' : 'badge-accent'}`}>
+                      {p.status === PROPOSAL_STATUS.VENUE_BOOKED ? '✅ Approved' : p.status === PROPOSAL_STATUS.REJECTED ? '❌ Rejected' : p.status === PROPOSAL_STATUS.NEEDS_REVISION ? '⚠️ Revision' : '⏳ Reviewing'}
+                    </span>
+                  </div>
+                  <div className="society-proposal-card-details">
+                    <span><Calendar size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle', color: 'var(--accent-society)' }} /> {p.date}</span>
+                    <span>📍 {venue?.name || 'TBD'}</span>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

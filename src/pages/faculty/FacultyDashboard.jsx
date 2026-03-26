@@ -1,10 +1,12 @@
+import React from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { PROPOSAL_STATUS, STATUS_LABELS } from '../../utils/constants';
 import { generateAISummary } from '../../utils/aiHelpers';
-import { ClipboardCheck, CheckCircle, AlertTriangle, ArrowRight, Sparkles, Clock, FileText } from 'lucide-react';
+import { ClipboardCheck, CheckCircle, Clock, FileText, Users, Sparkles, ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import './FacultyDashboard.css';
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
@@ -22,118 +24,124 @@ export default function FacultyDashboard() {
   );
 
   const reviewed = proposals.filter(p =>
-    p.auditTrail.some(a => a.by === user.id)
+    p.auditTrail?.some(a => a.by === user.id)
   );
 
   return (
-    <div className="page-container">
-      <div className="page-header">
-        <h1>Faculty Advisor Dashboard</h1>
-        <p>Review and approve event proposals from your assigned societies</p>
+    <div className="faculty-saas-layout">
+      {/* Header */}
+      <header className="faculty-saas-header animate-fade-in">
+        <div className="flex justify-between items-end w-full flex-wrap gap-4">
+          <div>
+            <div className="faculty-badge-professional mb-2">Faculty Portal</div>
+            <h1 className="faculty-saas-title">Overview</h1>
+            <p className="faculty-saas-subtitle">Manage, evaluate, and guide student initiatives with precision.</p>
+          </div>
+          <div className="faculty-saas-user">
+             <div className="avatar">{user?.name?.charAt(0) || 'F'}</div>
+             <div className="info">
+                <span className="name">{user?.name || 'Faculty Member'}</span>
+                <span className="role">Advising {user?.assignedClubs?.length || 0} Societies</span>
+             </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Stats Board */}
+      <div className="faculty-saas-stats animate-fade-in" style={{ animationDelay: '0.1s' }}>
+         <div className="saas-stat-card">
+           <div className="saas-stat-icon blue"><Clock size={20} /></div>
+           <div className="saas-stat-content">
+             <p className="saas-stat-label">Pending Reviews</p>
+             <h3 className="saas-stat-value">{pendingReview.length}</h3>
+           </div>
+           {pendingReview.length > 0 && <div className="saas-stat-trend">Needs Action</div>}
+         </div>
+
+         <div className="saas-stat-card">
+           <div className="saas-stat-icon emerald"><CheckCircle size={20} /></div>
+           <div className="saas-stat-content">
+             <p className="saas-stat-label">Events Evaluated</p>
+             <h3 className="saas-stat-value">{reviewed.length}</h3>
+           </div>
+         </div>
+
+         <div className="saas-stat-card">
+           <div className="saas-stat-icon purple"><Users size={20} /></div>
+           <div className="saas-stat-content">
+             <p className="saas-stat-label">Societies Mentored</p>
+             <h3 className="saas-stat-value">{user?.assignedClubs?.length || 0}</h3>
+           </div>
+         </div>
       </div>
 
-      {/* Stats */}
-      <div className="grid grid-3 gap-lg" style={{ marginBottom: 'var(--space-2xl)' }}>
-        <div className="stat-card animate-fade-in-up stagger-1">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon"><Clock size={20} /></div>
-          </div>
-          <div className="stat-value">{pendingReview.length}</div>
-          <div className="stat-label">Pending Review</div>
-        </div>
-        <div className="stat-card animate-fade-in-up stagger-2">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon" style={{ background: 'rgba(34,197,94,0.1)', color: 'var(--status-success)' }}><CheckCircle size={20} /></div>
-          </div>
-          <div className="stat-value">{reviewed.length}</div>
-          <div className="stat-label">Total Reviewed</div>
-        </div>
-        <div className="stat-card animate-fade-in-up stagger-3">
-          <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-            <div className="stat-icon" style={{ background: 'rgba(139,92,246,0.1)', color: 'var(--accent-society)' }}><FileText size={20} /></div>
-          </div>
-          <div className="stat-value">{user.assignedClubs?.length || 0}</div>
-          <div className="stat-label">Assigned Clubs</div>
-        </div>
-      </div>
-
-      {/* Pending Reviews */}
-      <div style={{ marginBottom: 'var(--space-2xl)' }}>
-        <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-lg)' }}>
-          <h2 style={{ fontSize: 'var(--font-lg)', fontWeight: 700 }}>
-            <ClipboardCheck size={20} style={{ display: 'inline', marginRight: 8, verticalAlign: 'middle' }} />
-            Pending Reviews
-          </h2>
-          <Link to="/reviews" className="btn btn-ghost btn-sm">View All →</Link>
+      {/* AI Triage Section */}
+      <main className="faculty-saas-main animate-fade-in" style={{ animationDelay: '0.2s' }}>
+        <div className="flex justify-between items-center mb-6">
+           <h2 className="saas-section-title">Requires Attention</h2>
+           {pendingReview.length > 0 && <span className="saas-badge-critical">{pendingReview.length} Pending</span>}
         </div>
 
         {pendingReview.length === 0 ? (
-          <div className="empty-state">
-            <CheckCircle size={48} />
-            <h3>All Caught Up!</h3>
-            <p>No proposals are waiting for your review right now.</p>
+          <div className="saas-empty-state">
+             <div className="saas-empty-icon"><ClipboardCheck size={32} /></div>
+             <h3>Inbox Zero</h3>
+             <p>All outstanding event proposals have been evaluated.</p>
           </div>
         ) : (
-          <div className="flex flex-col gap-lg">
+          <div className="saas-proposal-list">
             {pendingReview.map((proposal, i) => {
               const aiSummary = generateAISummary(proposal);
               const venue = venues.find(v => v.id === proposal.venueId);
+
               return (
-                <div key={proposal.id} className="card animate-fade-in-up" style={{ animationDelay: `${i * 0.05}s` }}>
-                  <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
-                    <div>
-                      <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700 }}>{proposal.title}</h3>
-                      <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>
-                        by {proposal.clubName} · Submitted {proposal.createdAt}
-                      </span>
-                    </div>
-                    <span className={`badge ${proposal.status === PROPOSAL_STATUS.SUBMITTED ? 'badge-accent' : 'badge-warning'}`}>
-                      {STATUS_LABELS[proposal.status]}
-                    </span>
-                  </div>
-
-                  {/* AI Summary */}
-                  <div style={{
-                    padding: 'var(--space-md)',
-                    background: 'var(--accent-soft)',
-                    borderRadius: 'var(--radius-md)',
-                    marginBottom: 'var(--space-md)',
-                    border: '1px solid var(--accent-glow)'
-                  }}>
-                    <div className="flex items-center gap-sm" style={{ marginBottom: 'var(--space-sm)' }}>
-                      <Sparkles size={14} color="var(--accent)" />
-                      <span style={{ fontSize: 'var(--font-xs)', fontWeight: 600, color: 'var(--accent)' }}>AI Summary</span>
-                    </div>
-                    <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                      {aiSummary.summary}
-                    </p>
-                    {aiSummary.riskFlags.length > 0 && (
-                      <div className="flex flex-wrap gap-sm" style={{ marginTop: 'var(--space-sm)' }}>
-                        {aiSummary.riskFlags.map((flag, fi) => (
-                          <span key={fi} className="badge badge-warning" style={{ fontSize: '10px' }}>
-                            ⚠️ {flag}
-                          </span>
-                        ))}
+                <div key={proposal.id} className="saas-proposal-card animate-slide-up" style={{ animationDelay: `${(i+2)*0.05}s` }}>
+                   <div className="saas-proposal-edge"></div>
+                   
+                   <div className="saas-proposal-body">
+                      {/* Top Row: Meta */}
+                      <div className="flex justify-between items-center mb-4">
+                         <div className="flex items-center gap-3">
+                            <span className="saas-proposal-tag">{STATUS_LABELS[proposal.status]}</span>
+                            <span className="saas-text-muted text-sm flex items-center gap-1"><Calendar size={14}/> {proposal.date}</span>
+                         </div>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-lg" style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
-                      <span>📅 {proposal.date}</span>
-                      <span>👥 {proposal.expectedAttendees}</span>
-                      <span>📍 {venue?.name || 'No venue'}</span>
-                    </div>
-                    <Link to={`/proposals/${proposal.id}`} className="btn btn-primary btn-sm">
-                      Review <ArrowRight size={14} />
-                    </Link>
-                  </div>
+                      {/* Title & Organization */}
+                      <h3 className="saas-proposal-title">{proposal.title}</h3>
+                      <p className="saas-proposal-org">Proposed by <strong>{proposal.clubName}</strong></p>
+
+                      {/* AI Intelligence Block - Notion AI Style */}
+                      <div className="saas-ai-block">
+                         <div className="saas-ai-header">
+                            <Sparkles size={14} className="saas-ai-icon" /> AI Executive Summary
+                         </div>
+                         <p className="saas-ai-text">{aiSummary.summary}</p>
+                         
+                         {aiSummary.riskFlags.length > 0 && (
+                            <div className="saas-ai-risks">
+                               {aiSummary.riskFlags.map((f, fi) => <span key={fi} className="saas-risk-flag">Flag: {f}</span>)}
+                            </div>
+                         )}
+                      </div>
+
+                      {/* Footer Actions */}
+                      <div className="saas-proposal-footer">
+                         <div className="flex items-center gap-4 saas-text-muted text-sm">
+                            <span className="flex items-center gap-1"><Users size={14}/> {proposal.expectedAttendees} Pax</span>
+                            <span className="flex items-center gap-1"><MapPin size={14}/> {venue?.name || 'TBD'}</span>
+                         </div>
+                         <Link to={`/proposals/${proposal.id}`} className="saas-btn-action">
+                            Review Proposal <ArrowRight size={16} />
+                         </Link>
+                      </div>
+                   </div>
                 </div>
               );
             })}
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
