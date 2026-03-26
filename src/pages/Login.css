@@ -220,4 +220,19 @@
 @media (max-width: 480px) {
   .login-container { padding: var(--space-xl); }
   .login-title { font-size: var(--font-2xl); }
+  .login-roles-grid { gap: var(--space-sm); }
+  .login-role-card { padding: var(--space-lg) var(--space-sm); }
+  .login-role-icon-wrapper { width: 44px; height: 44px; }
+}
+
+@media (max-width: 360px) {
+  .login-roles-grid { grid-template-columns: 1fr; }
+  .login-role-card {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    text-align: left;
+  }
+  .login-title { font-size: var(--font-xl); }
 }

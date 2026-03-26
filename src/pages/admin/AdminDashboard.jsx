@@ -153,7 +153,7 @@ export default function AdminDashboard() {
             {adminPending.map(p => {
               const venue = venues.find(v => v.id === p.venueId);
               return (
-                <div key={p.id} className="card flex items-center justify-between">
+                <div key={p.id} className="card card-action-row">
                   <div className="flex items-center gap-md">
                     <span style={{ fontSize: '24px' }}>{venue?.image || '📍'}</span>
                     <div>

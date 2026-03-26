@@ -39,8 +39,8 @@ export default function ProposalsList() {
         <p>View and manage event proposals</p>
       </div>
 
-      <div className="flex items-center gap-lg" style={{ marginBottom: 'var(--space-xl)' }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
+      <div className="filter-row" style={{ marginBottom: 'var(--space-xl)' }}>
+        <div className="filter-search">
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input className="input-field" placeholder="Search proposals..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 36 }} />
         </div>
@@ -53,7 +53,7 @@ export default function ProposalsList() {
       </div>
 
       <div className="table-container">
-        <table className="table">
+        <table className="table table-wide">
           <thead>
             <tr>
               <th>Event</th>

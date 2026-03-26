@@ -461,7 +461,46 @@ select.input-field {
 .grid-4 { grid-template-columns: repeat(4, 1fr); }
 
 @media (max-width: 1024px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .grid-3 { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; } }
+
+/* Detail page two-column layout (main + sidebar) */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: var(--space-2xl);
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .detail-layout { grid-template-columns: 1fr; }
+}
+
+/* Filter rows — wrap on mobile */
+.filter-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+}
+.filter-row .filter-search {
+  position: relative;
+  flex: 1;
+  min-width: 180px;
+  max-width: 300px;
+}
+@media (max-width: 640px) {
+  .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-row .filter-search { max-width: 100%; }
+  .filter-row select.input-field { width: 100%; max-width: 100%; }
+}
+
+/* Stagger animations */
+.stagger-1 { animation-delay: 0.05s; }
+.stagger-2 { animation-delay: 0.1s; }
+.stagger-3 { animation-delay: 0.15s; }
+.stagger-4 { animation-delay: 0.2s; }
+.stagger-5 { animation-delay: 0.25s; }
+.stagger-6 { animation-delay: 0.3s; }
 
 /* ============================================
    PAGE LAYOUT — App-like
@@ -678,6 +717,24 @@ select.input-field {
     flex-wrap: wrap;
     gap: var(--space-sm);
   }
+
+  /* Filter rows on mobile */
+  .filter-row { flex-direction: column; align-items: stretch; }
+  .filter-row .filter-search { max-width: 100%; }
+  .filter-row select.input-field { max-width: 100%; }
+  .filter-legend { display: none; }
+
+  /* Detail layout stacks on mobile */
+  .detail-layout { grid-template-columns: 1fr; }
+
+  /* Card rows that contain action buttons */
+  .card-action-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
 /* ============================================
@@ -696,7 +753,8 @@ select.input-field {
   .grid-4, .grid-3, .grid-2 { gap: var(--space-sm); }
 
   /* Table minimum width for scrollability */
-  .table { min-width: 500px; }
+  .table { min-width: 480px; }
+  .table-wide { min-width: 640px; }
 }
 
 /* ============================================

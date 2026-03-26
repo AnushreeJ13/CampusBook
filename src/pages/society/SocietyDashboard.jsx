@@ -113,7 +113,7 @@ export default function SocietyDashboard() {
         </div>
 
         <div className="table-container">
-          <table className="table">
+          <table className="table table-wide">
             <thead>
               <tr>
                 <th>Event</th>

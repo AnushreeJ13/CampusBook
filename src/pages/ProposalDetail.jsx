@@ -109,7 +109,7 @@ export default function ProposalDetail() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--space-2xl)', alignItems: 'start' }}>
+      <div className="detail-layout">
         {/* Main Content */}
         <div>
           {/* AI Summary */}
@@ -134,7 +134,7 @@ export default function ProposalDetail() {
           {/* Event Details */}
           <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>
             <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700, marginBottom: 'var(--space-lg)' }}>Event Details</h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-lg)' }}>
               <div className="flex items-center gap-md">
                 <div className="stat-icon"><Calendar size={18} /></div>
                 <div>
@@ -203,7 +203,7 @@ export default function ProposalDetail() {
                 <label>Comment / Note</label>
                 <textarea className="input-field" placeholder="Add a comment or note for the proposer..." rows={3} value={comment} onChange={e => setComment(e.target.value)} />
               </div>
-              <div className="flex gap-md">
+              <div className="flex gap-md flex-wrap">
                 <button className="btn btn-success" onClick={handleApprove}>
                   <CheckCircle size={16} /> Approve{user.role === ROLES.FACULTY ? ' & Forward' : ' & Book Venue'}
                 </button>

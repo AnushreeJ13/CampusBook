@@ -1,7 +1,7 @@
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
-import { Bell, Search, X, FileText, MapPin } from 'lucide-react';
+import { Bell, Search, X, FileText, MapPin, Sparkles } from 'lucide-react';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './TopBar.css';
@@ -58,6 +58,11 @@ export default function TopBar() {
   return (
     <header className="topbar">
       <div className="topbar-left">
+        {/* Mobile brand — visible when sidebar is hidden */}
+        <div className="topbar-brand">
+          <div className="topbar-brand-icon"><Sparkles size={14} /></div>
+          <span className="topbar-brand-name">CampusBook</span>
+        </div>
         <h2 className="topbar-university">{university}</h2>
         <div className="live-indicator"><span className="live-dot" /><span>Live</span></div>
       </div>

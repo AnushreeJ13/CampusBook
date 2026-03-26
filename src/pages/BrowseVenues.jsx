@@ -60,8 +60,8 @@ export default function BrowseVenues() {
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-lg" style={{ marginBottom: 'var(--space-2xl)' }}>
-        <div style={{ position: 'relative', flex: 1, maxWidth: 300 }}>
+      <div className="filter-row" style={{ marginBottom: 'var(--space-2xl)' }}>
+        <div className="filter-search">
           <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
           <input className="input-field" placeholder="Search venues..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 36 }} />
         </div>
@@ -75,7 +75,7 @@ export default function BrowseVenues() {
           <option value="lab">Lab</option>
         </select>
         {/* Legend */}
-        <div className="flex items-center gap-md" style={{ marginLeft: 'auto' }}>
+        <div className="filter-legend flex items-center gap-md" style={{ marginLeft: 'auto' }}>
           {Object.entries(statusColors).slice(0, 4).map(([key, val]) => (
             <div key={key} className="flex items-center gap-xs" style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)' }}>
               <div style={{ width: 10, height: 10, borderRadius: 3, background: val.bg, border: `1px solid ${val.border}` }} />
@@ -147,7 +147,7 @@ export default function BrowseVenues() {
           </div>
 
           <div className="table-container">
-            <table className="table">
+            <table className="table table-wide">
               <thead>
                 <tr>
                   <th>Time Slot</th>
