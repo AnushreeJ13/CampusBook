@@ -52,7 +52,7 @@ export default function ProposalsList() {
         </select>
       </div>
 
-      <div className="table-container desktop-only">
+      <div className="table-container">
         <table className="table table-wide">
           <thead>
             <tr>
@@ -97,36 +97,6 @@ export default function ProposalsList() {
         </table>
       </div>
 
-      <div className="mobile-only flex flex-col gap-md">
-        {filtered.map(p => {
-          const venue = venues.find(v => v.id === p.venueId);
-          return (
-            <div key={p.id} className="card animate-fade-in-up" style={{ padding: 'var(--space-md)' }}>
-              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-sm)' }}>
-                <span className={`badge ${getStatusBadge(p.status)}`}>{STATUS_LABELS[p.status]}</span>
-                <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>{p.date}</span>
-              </div>
-              <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 700, marginBottom: '2px' }}>{p.title}</h3>
-              <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)' }}>{p.clubName}</p>
-              
-              <div className="flex items-center justify-between" style={{ marginTop: 'var(--space-sm)' }}>
-                <div className="flex items-center gap-sm">
-                  <span className="badge badge-accent" style={{ background: 'var(--bg-surface)' }}>{p.eventType}</span>
-                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>{venue?.name || 'No Venue'}</span>
-                </div>
-                <Link to={`/proposals/${p.id}`} className="btn btn-ghost btn-sm">
-                  View <ArrowRight size={14} />
-                </Link>
-              </div>
-            </div>
-          );
-        })}
-        {filtered.length === 0 && (
-          <div className="empty-state card" style={{ padding: 'var(--space-xl)' }}>
-            <p>No proposals found</p>
-          </div>
-        )}
-      </div>
     </div>
   );
 }
