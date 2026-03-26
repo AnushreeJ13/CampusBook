@@ -6,7 +6,7 @@
   border-right: 1px solid var(--border-primary);
   display: flex;
   flex-direction: column;
-  z-index: 100;
+  z-index: 150;
   transition: width var(--transition-base);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
@@ -232,7 +232,7 @@
   .sidebar-mobile-overlay {
     display: block; position: fixed; inset: 0;
     background: rgba(26, 22, 37, 0.4); backdrop-filter: blur(2px);
-    z-index: 95; animation: fadeIn 0.2s ease;
+    z-index: 140; animation: fadeIn 0.2s ease;
   }
   .desktop-only { display: none !important; }
 }

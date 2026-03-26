@@ -455,6 +455,13 @@ select.input-field {
 .w-full { width: 100%; }
 .text-center { text-align: center; }
 
+.mobile-only { display: none !important; }
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+  .mobile-only { display: block !important; }
+  .mobile-only.flex { display: flex !important; }
+}
+
 .grid { display: grid; }
 .grid-2 { grid-template-columns: repeat(2, 1fr); }
 .grid-3 { grid-template-columns: repeat(3, 1fr); }
