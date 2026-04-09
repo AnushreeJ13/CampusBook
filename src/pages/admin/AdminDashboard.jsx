@@ -3,13 +3,14 @@ import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { PROPOSAL_STATUS } from '../../utils/constants';
 import { BarChart3, Building2, FileText, CheckCircle, Clock, Shield, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './AdminDashboard.css';
 
 const CHART_COLORS = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
 
 export default function AdminDashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { proposals, bookings } = useProposals();
   const { venues } = useVenues();
@@ -38,7 +39,7 @@ export default function AdminDashboard() {
       <div className="admin-hero">
         <div className="admin-blob admin-blob-1" />
         <div className="admin-blob admin-blob-2" />
-        
+
         <div className="admin-hero-content">
           <div>
             <h1>Admin Control Center</h1>
@@ -61,7 +62,7 @@ export default function AdminDashboard() {
           </div>
           <div className="admin-stat-value">{proposals.length}</div>
         </div>
-        
+
         <div className="admin-stat admin-stat--pending stagger-2">
           <div className="admin-stat-header">
             <span className="admin-stat-label">Awaiting Approval</span>
@@ -71,7 +72,7 @@ export default function AdminDashboard() {
           </div>
           <div className="admin-stat-value">{adminPending.length}</div>
         </div>
-        
+
         <div className="admin-stat admin-stat--approved stagger-3">
           <div className="admin-stat-header">
             <span className="admin-stat-label">Approved Events</span>
@@ -81,7 +82,7 @@ export default function AdminDashboard() {
           </div>
           <div className="admin-stat-value">{approved.length}</div>
         </div>
-        
+
         <div className="admin-stat admin-stat--venues stagger-4">
           <div className="admin-stat-header">
             <span className="admin-stat-label">Managed Venues</span>
@@ -97,7 +98,7 @@ export default function AdminDashboard() {
       <div className="admin-charts-grid">
         {/* Event Types Pie */}
         <div className="admin-chart-card stagger-5">
-          <h3 className="admin-chart-title">Event Type Distribution</h3>
+          <h3 className="admin-chart-title">Global Signal Distribution</h3>
           <div style={{ height: 220 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -109,6 +110,8 @@ export default function AdminDashboard() {
                   outerRadius={85}
                   paddingAngle={4}
                   dataKey="value"
+                  onClick={(data) => navigate(`/proposals?type=${data.name}`)}
+                  style={{ cursor: 'pointer' }}
                 >
                   {pieData.map((_, i) => (
                     <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
@@ -138,10 +141,10 @@ export default function AdminDashboard() {
 
         {/* Venue Usage Bar */}
         <div className="admin-chart-card stagger-6">
-          <h3 className="admin-chart-title">Venue Usage</h3>
+          <h3 className="admin-chart-title">Sector Utilization</h3>
           <div style={{ height: 250 }}>
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={venueUsage}>
+              <BarChart data={venueUsage} onClick={(data) => data && navigate('/venues/manage')}>
                 <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
                 <YAxis tick={{ fontSize: 10, fill: 'var(--text-tertiary)' }} />
                 <Tooltip
@@ -153,8 +156,8 @@ export default function AdminDashboard() {
                     fontSize: 'var(--font-xs)',
                   }}
                 />
-                <Bar dataKey="proposals" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="Proposals" />
-                <Bar dataKey="bookings" fill="var(--accent-admin)" radius={[4, 4, 0, 0]} name="Bookings" />
+                <Bar dataKey="proposals" fill="#8B5CF6" radius={[4, 4, 0, 0]} name="Proposals" style={{ cursor: 'pointer' }} />
+                <Bar dataKey="bookings" fill="var(--accent-admin)" radius={[4, 4, 0, 0]} name="Bookings" style={{ cursor: 'pointer' }} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -166,7 +169,7 @@ export default function AdminDashboard() {
         <div className="admin-pending-section">
           <div className="admin-pending-header">
             <h2>
-              Pending Approvals 
+              Pending Approvals
               <span className="admin-pending-count">{adminPending.length}</span>
             </h2>
             <Link to="/reviews" className="btn btn-ghost btn-sm">View All →</Link>
@@ -175,7 +178,7 @@ export default function AdminDashboard() {
             {adminPending.map((p, i) => {
               const venue = venues.find(v => v.id === p.venueId);
               return (
-                <div key={p.id} className="admin-pending-card animate-slide-left stagger-1" style={{ animationDelay: `${(i+5) * 0.1}s` }}>
+                <div key={p.id} className="admin-pending-card animate-slide-left stagger-1" style={{ animationDelay: `${(i + 5) * 0.1}s` }}>
                   <div className="admin-pending-info">
                     <span className="admin-pending-emoji">{venue?.image || '📍'}</span>
                     <div>

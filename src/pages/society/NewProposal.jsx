@@ -21,7 +21,7 @@ export default function NewProposal() {
   const [manualMode, setManualMode] = useState(false);
   const [form, setForm] = useState({
     title: '', eventType: '', description: '', expectedAttendees: '',
-    date: '', timeSlot: '', startTime: '', endTime: '', venueId: '', resources: '', documents: [],
+    date: '', timeSlot: '', startTime: '', endTime: '', venueId: '', resources: '', documents: [], posterUrl: '',
   });
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
@@ -56,7 +56,14 @@ export default function NewProposal() {
     expectedAttendees: parseInt(form.expectedAttendees) || 0,
   }, proposals, venues), [form, proposals, venues, user.clubId]);
 
+  const [error, setError] = useState('');
+
   const handleSubmit = () => {
+    if (!form.posterUrl) {
+      setError("An event image/poster is mandatory for professional indexing.");
+      return;
+    }
+    setError('');
     const club = MOCK_CLUBS.find(c => c.id === user.clubId);
     const proposal = {
       ...form,
@@ -67,6 +74,7 @@ export default function NewProposal() {
       submittedByName: user.name || user.displayName || 'Unknown User',
       currentReviewer: club?.facultyAdvisorId || 'u4', // Dynamic lookup with fallback
       documents: form.documents,
+      posterUrl: form.posterUrl,
     };
     submitProposal(proposal);
     navigate('/proposals');
@@ -76,6 +84,17 @@ export default function NewProposal() {
     const files = Array.from(e.target.files);
     const docs = files.map(f => ({ name: f.name, type: f.type.includes('image') ? 'image' : 'pdf' }));
     update('documents', [...form.documents, ...docs]);
+  };
+
+  const handlePosterUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        update('posterUrl', reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
@@ -243,25 +262,48 @@ export default function NewProposal() {
 
           {step === 3 && (
             <div className="form-step animate-fade-in">
-              <h2 className="form-step-title">Documents</h2>
-              <div className="upload-area">
-                <Upload size={32} />
-                <p>Upload speaker IDs, permissions, posters, etc.</p>
-                <label className="btn btn-secondary btn-sm">
-                  Choose Files
-                  <input type="file" multiple onChange={handleFileUpload} style={{ display: 'none' }} />
-                </label>
-              </div>
-              {form.documents.length > 0 && (
-                <div className="doc-list">
-                  {form.documents.map((d, i) => (
-                    <div key={i} className="doc-item">
-                      <span>{d.type === 'image' ? '🖼️' : '📄'} {d.name}</span>
-                      <button className="btn btn-ghost btn-sm" onClick={() => update('documents', form.documents.filter((_, j) => j !== i))}>✕</button>
+              <h2 className="form-step-title">Documents & Branding</h2>
+              
+              <div className="input-group mb-6">
+                <label>Event Photo / Logo <span className="text-accent">*Required</span></label>
+                <div className="upload-area p-4 border-2 border-dashed border-border-secondary rounded-xl bg-card hover:border-accent transition-colors">
+                  {form.posterUrl ? (
+                    <div className="flex flex-col items-center">
+                      <img src={form.posterUrl} alt="Event Poster" style={{ maxHeight: '120px', borderRadius: '8px', marginBottom: '1rem' }} />
+                      <button className="btn btn-ghost btn-sm text-red-500" onClick={() => update('posterUrl', '')}>Remove Photo</button>
                     </div>
-                  ))}
+                  ) : (
+                    <div className="flex flex-col items-center">
+                      <p className="text-sm text-dim mb-4 text-center">Upload an event photo. If omitted, the default UniFlow logo will be used automatically.</p>
+                      <label className="btn btn-secondary btn-sm">
+                        Upload Image
+                        <input type="file" accept="image/*" onChange={handlePosterUpload} style={{ display: 'none' }} />
+                      </label>
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
+
+              <div className="input-group">
+                <label>Other Documents (Speaker IDs, Permissions)</label>
+                <div className="upload-area mt-2 p-4 border border-border-secondary rounded-xl">
+                  <Upload size={24} className="mb-2 text-text-tertiary" />
+                  <label className="btn btn-secondary btn-sm mt-2">
+                    Choose Files
+                    <input type="file" multiple onChange={handleFileUpload} style={{ display: 'none' }} />
+                  </label>
+                </div>
+                {form.documents.length > 0 && (
+                  <div className="doc-list mt-top">
+                    {form.documents.map((d, i) => (
+                      <div key={i} className="doc-item flex justify-between p-2 bg-card border border-border-primary rounded mt-2">
+                        <span>{d.type === 'image' ? '🖼️' : '📄'} {d.name}</span>
+                        <button className="btn btn-ghost btn-sm text-red-500" onClick={() => update('documents', form.documents.filter((_, j) => j !== i))}>✕</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 

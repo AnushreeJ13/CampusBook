@@ -1,0 +1,164 @@
+.college-selector-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(3, 4, 11, 0.98);
+  backdrop-filter: blur(20px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-xl);
+  overflow-y: auto;
+}
+
+.college-selector-container {
+  max-width: 1200px;
+  width: 100%;
+  animation: fadeInOut 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.selector-header {
+  text-align: center;
+  margin-bottom: var(--space-3xl);
+}
+
+.selector-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  background: rgba(var(--accent-rgb), 0.1);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  border-radius: 100px;
+  color: var(--accent);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  margin-bottom: var(--space-xl);
+  animation: bounceSlow 3s infinite;
+}
+
+.selector-title {
+  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-weight: 900;
+  color: white;
+  margin-bottom: var(--space-md);
+  letter-spacing: -0.03em;
+}
+
+.selector-title span {
+  background: linear-gradient(90deg, var(--accent), #60a5fa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.selector-subtitle {
+  color: #94a3b8;
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.college-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: var(--space-xl);
+}
+
+.college-card {
+  position: relative;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: var(--space-2xl);
+  border-radius: 32px;
+  text-align: left;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.college-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(var(--accent-rgb), 0.4);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--accent-rgb), 0.1);
+}
+
+.college-card-glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.15), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.college-card:hover .college-card-glow {
+  opacity: 1;
+}
+
+.college-card-logo {
+  font-size: 3.5rem;
+  margin-bottom: var(--space-xl);
+  transition: transform 0.5s var(--ease-out);
+}
+
+.college-card:hover .college-card-logo {
+  transform: scale(1.1) rotate(-10deg);
+}
+
+.college-card-name {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: var(--space-xs);
+  line-height: 1.2;
+}
+
+.college-card-tag {
+  color: #64748b;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.selector-footer {
+  margin-top: var(--space-3xl);
+  text-align: center;
+  color: #475569;
+}
+
+.footer-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: var(--space-lg);
+}
+
+.footer-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.footer-dots span.active {
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+
+@keyframes bounceSlow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes fadeInOut {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@media (max-width: 640px) {
+  .college-selector-overlay { padding: var(--space-lg); }
+  .selector-title { font-size: 2rem; }
+  .college-grid { grid-template-columns: 1fr; }
+}

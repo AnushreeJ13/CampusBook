@@ -9,34 +9,64 @@ import {
   upsertProfile,
   supabase
 } from '../supabase';
-import { ROLES } from '../utils/constants';
+import { ROLES, COLLEGES } from '../utils/constants';
+import { seedCollegeData } from '../utils/forensicSeeder';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [university, setUniversity] = useState('CampusBook University');
+  const [university, setUniversity] = useState('UniFlow Platform');
   const [selectedCollege, setSelectedCollege] = useState(() => {
     try {
-      const saved = localStorage.getItem('campusos_college');
+      const saved = localStorage.getItem('uniflow_college');
       return saved ? JSON.parse(saved) : null;
     } catch(e) { return null; }
   });
 
-  const selectCollege = (college) => {
+  const selectCollege = useCallback(async (college) => {
     setSelectedCollege(college);
-    localStorage.setItem('campusos_college', JSON.stringify(college));
+    localStorage.setItem('uniflow_college', JSON.stringify(college));
     if (college) setUniversity(college.name);
-  };
+    
+    // Remote Sync if logged in
+    if (user?.id && college) {
+      try {
+        await upsertProfile({ id: user.id, college: college.name });
+        // Inoculate college with forensic data if empty
+        // seedCollegeData(college.id);
+      } catch (err) {
+        console.error("Failed to sync college preference:", err);
+      }
+    }
+  }, [user]);
 
   // Sync Auth State
   useEffect(() => {
     const unsubscribe = onAuthStateChange(async (supabaseUser) => {
-      if (supabaseUser) {
-        try {
-          // Fetch additional profile data from Supabase 'users' table
+      try {
+        if (supabaseUser) {
+          setLoading(true);
+          console.group("Auth Sync Trace");
+          console.log("Supabase User:", supabaseUser.id);
+          console.log("Existing Metadata Role:", supabaseUser.user_metadata?.role);
+
+          // Fetch additional profile data
           const profileData = await getProfile(supabaseUser.id);
+          console.log("DB Profile Role:", profileData?.role);
+
+          // Priority: 1. DB Row, 2. Auth Metadata, 3. Default Student
+          const rawRole = profileData?.role || supabaseUser.user_metadata?.role || ROLES.STUDENT;
+          const roleToSet = rawRole.toLowerCase(); // Case-insensitive normalization
+          
+          console.log("Final Resolved Role (Normalized):", roleToSet);
+
+          // If current metadata doesn't match resolved role, sync it back silently
+          if (supabaseUser.user_metadata?.role !== roleToSet && profileData?.role) {
+            console.log("Syncing role to metadata for persistent resolution...");
+            supabase.auth.updateUser({ data: { role: roleToSet } }).catch(e => console.warn("Metadata sync warning:", e));
+          }
 
           if (profileData) {
             setUser({
@@ -44,38 +74,50 @@ export function AuthProvider({ children }) {
               uid: supabaseUser.id,
               email: supabaseUser.email,
               phoneNumber: supabaseUser.phone,
-              displayName: profileData.name || supabaseUser.user_metadata?.full_name,
-              avatar: profileData.avatar || (profileData.name ? profileData.name[0] : '👤'),
+              displayName: profileData.name || supabaseUser.user_metadata?.full_name || 'Campus User',
+              avatar: profileData.avatar || (profileData.name ? profileData.name[0] : (supabaseUser.user_metadata?.full_name ? supabaseUser.user_metadata.full_name[0] : '👤')),
+              role: roleToSet,
+              incomplete: profileData.incomplete ?? false,
               ...profileData
             });
+
             if (profileData.college) {
               setUniversity(profileData.college);
+              const matchingCollege = COLLEGES.find(c => 
+                c.id === profileData.college || 
+                c.name === profileData.college || 
+                c.shortName === profileData.college
+              );
+
+              if (matchingCollege) {
+                setSelectedCollege(matchingCollege);
+                localStorage.setItem('uniflow_college', JSON.stringify(matchingCollege));
+              }
             }
           } else {
-            // User exists in Auth but not in 'users' table yet
+            // No profile found
+            console.log("Profile missing, using fallback role:", roleToSet);
             setUser({
               id: supabaseUser.id,
               uid: supabaseUser.id,
               email: supabaseUser.email,
               phoneNumber: supabaseUser.phone,
-              displayName: supabaseUser.user_metadata?.full_name,
+              displayName: supabaseUser.user_metadata?.full_name || 'New User',
               avatar: supabaseUser.user_metadata?.full_name ? supabaseUser.user_metadata.full_name[0] : '👤',
-              incomplete: true
+              role: roleToSet,
+              incomplete: true 
             });
           }
-        } catch (err) {
-          console.error("Profile fetch failed:", err);
-          setUser({
-            id: supabaseUser.id,
-            uid: supabaseUser.id,
-            email: supabaseUser.email,
-            incomplete: true
-          });
+          console.groupEnd();
+        } else {
+          setUser(null);
         }
-      } else {
+      } catch (err) {
+        console.error("Auth sync fatal error:", err);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => {
@@ -122,10 +164,42 @@ export function AuthProvider({ children }) {
         updated_at: new Date().toISOString(),
         incomplete: false 
     };
+    
+    // 1. Update database
     await upsertProfile(profile);
-    // Update local state
+    
+    // 2. Update Auth metadata for faster role resolution
+    if (data.role) {
+      await supabase.auth.updateUser({
+        data: { role: data.role }
+      });
+    }
+
+    // 3. Update local state
     setUser(prev => ({ ...prev, ...data, incomplete: false }));
     if (data.college) setUniversity(data.college);
+  };
+
+  const toggleSavedEvent = async (eventId) => {
+    if (!user) return;
+    // Handle both snake_case from DB and camelCase in state
+    const currentSaved = user.saved_events || user.savedEvents || [];
+    const newSaved = currentSaved.includes(eventId)
+      ? currentSaved.filter(id => id !== eventId)
+      : [...currentSaved, eventId];
+    
+    // Update local state (keep both for compatibility)
+    const updatedUser = { ...user, saved_events: newSaved, savedEvents: newSaved };
+    setUser(updatedUser);
+    
+    if (user.id) {
+      try {
+        // Use snake_case for Supabase
+        await upsertProfile({ id: user.id, saved_events: newSaved });
+      } catch (err) {
+        console.error("Failed to save event:", err);
+      }
+    }
   };
 
   // Phone Auth Helpers (Supabase Otp)
@@ -168,7 +242,8 @@ export function AuthProvider({ children }) {
       logout,
       completeProfile,
       setupRecaptcha,
-      loginWithPhone
+      loginWithPhone,
+      toggleSavedEvent
     }}>
       {!loading && children}
     </AuthContext.Provider>

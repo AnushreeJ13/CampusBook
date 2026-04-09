@@ -13,13 +13,21 @@ export default function SocietyDashboard() {
 
   const myProposals = proposals.filter(p => p.clubId === user.clubId || p.submittedBy === user.uid || p.submittedBy === user.id);
   const approved = myProposals.filter(p => [PROPOSAL_STATUS.APPROVED, PROPOSAL_STATUS.VENUE_BOOKED].includes(p.status));
-  const pending = myProposals.filter(p => [PROPOSAL_STATUS.SUBMITTED, PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW].includes(p.status));
+  const pending = myProposals.filter(p => [PROPOSAL_STATUS.SUBMITTED, PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW, PROPOSAL_STATUS.VENUE_REQUESTED].includes(p.status));
   const needsRevision = myProposals.filter(p => p.status === PROPOSAL_STATUS.REVISION_REQUESTED);
+  const rejected = myProposals.filter(p => p.status === PROPOSAL_STATUS.REJECTED);
+
+  const approvalRate = myProposals.length > 0 
+    ? Math.round((approved.length / (myProposals.length - pending.length || 1)) * 100) 
+    : 0;
+
+  const totalAttendance = approved.reduce((acc, p) => acc + (p.attendeeCount || 0), 0);
+  const avgAttendance = approved.length > 0 ? Math.round(totalAttendance / approved.length) : 0;
 
   return (
     <div className="page-container" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
-      {/* Hero Header - CampusOS Branding */}
-      <div className="bg-indigo-900 text-white p-12 rounded-[2.5rem] mb-12 relative overflow-hidden shadow-2xl" style={{background: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)', padding: '3rem', borderRadius: '2.5rem', marginBottom: '3rem', position: 'relative', overflow: 'hidden'}}>
+      {/* Hero Header — UniFlow Branding */}
+      <div className="bg-indigo-900 text-white p-12 rounded-[2.5rem] mb-12 relative overflow-hidden shadow-2xl" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%)', padding: '3rem', borderRadius: '2.5rem', marginBottom: '3rem', position: 'relative', overflow: 'hidden'}}>
         <div className="absolute top-0 right-0 p-12 opacity-10" style={{position: 'absolute', top: 0, right: 0, padding: '3rem', opacity: 0.1}}>
            <Zap size={180} />
         </div>
@@ -56,19 +64,24 @@ export default function SocietyDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem'}}>
                <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 group hover:shadow-lg transition-all" style={{padding: '1.5rem', background: '#f5f3ff', borderRadius: '1.5rem', border: '1px solid #e0e7ff', transition: 'all 0.3s'}}>
                   <TrendingUp className="text-indigo-600 mb-4" size={32} />
-                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Attendance Boost</h3>
-                  <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>Historical data suggests Wednesday slots increase turnout by <strong>22%</strong>.</p>
+                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Reach Velocity</h3>
+                  <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>
+                    Your events average <strong>{avgAttendance}</strong> attendees. 
+                    {avgAttendance > 50 ? ' High engagement detected.' : ' Targeted push recommended.'}
+                  </p>
                   <div className="w-full bg-indigo-200 h-1 rounded-full overflow-hidden" style={{width: '100%', background: '#e0e7ff', height: '0.25rem', borderRadius: '9999px', overflow: 'hidden'}}>
-                    <div className="bg-indigo-600 h-full w-4/5" style={{background: '#4f46e5', height: '100%', width: '80%'}}></div>
+                    <div className="bg-indigo-600 h-full" style={{background: '#4f46e5', height: '100%', width: `${Math.min(100, (avgAttendance/200)*100)}%`}}></div>
                   </div>
                </div>
                
                <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 group hover:shadow-lg transition-all" style={{padding: '1.5rem', background: '#ecfdf5', borderRadius: '1.5rem', border: '1px solid #d1fae5', transition: 'all 0.3s'}}>
                   <CheckCircle className="text-emerald-600 mb-4" size={32} />
-                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Fast Approval Path</h3>
-                  <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>You have <strong>94%</strong> approval rate for technical workshops in OAT.</p>
+                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Auth Success Rate</h3>
+                  <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>
+                    You have a <strong>{approvalRate}%</strong> approval rate across across all verified venue requests.
+                  </p>
                   <div className="w-full bg-emerald-200 h-1 rounded-full overflow-hidden" style={{width: '100%', background: '#d1fae5', height: '0.25rem', borderRadius: '9999px', overflow: 'hidden'}}>
-                    <div className="bg-emerald-600 h-full w-[94%]" style={{background: '#059669', height: '100%', width: '94%'}}></div>
+                    <div className="bg-emerald-600 h-full" style={{background: '#059669', height: '100%', width: `${approvalRate}%`}}></div>
                   </div>
                </div>
             </div>

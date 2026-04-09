@@ -1,112 +1,197 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useProposals } from '../../contexts/ProposalContext';
-import { EVENT_TYPES, PROPOSAL_STATUS } from '../../utils/constants';
+import { useVenues } from '../../contexts/VenueContext';
+import { useAttendance } from '../../contexts/AttendanceContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { EVENT_TYPES } from '../../utils/constants';
+import { 
+  Calendar, Clock, MapPin, 
+  Users, ChevronLeft, Info, Scan, ShieldCheck, 
+  CheckCircle2, Ticket
+} from 'lucide-react';
+import './EventDetail.css';
 
 export default function EventDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { proposals } = useProposals();
+  const { venues } = useVenues();
+  const { activeSessions, myAttendance, checkIn } = useAttendance();
   
   const event = proposals.find(p => p.id === id);
+  const venue = venues.find(v => v.id === event?.venueId);
+  const activeSession = activeSessions.find(s => s.eventId === id && s.isActive);
+  const hasAttended = myAttendance.some(a => a.sessionId === activeSession?.id);
 
   if (!event) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-slate-400">
-        <div className="text-6xl mb-4">🔍</div>
-        <h2 className="text-2xl font-bold text-white">Event Not Found</h2>
-        <p>This event might have been moved or cancelled.</p>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 0', textAlign: 'center' }}>
+        <Calendar size={64} style={{ color: 'var(--text-tertiary)', opacity: 0.5, marginBottom: '16px' }} />
+        <h2 style={{ fontSize: '24px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '8px' }}>Event Not Found</h2>
+        <p style={{ color: 'var(--text-secondary)', marginBottom: '32px' }}>The requested event could not be found or you don't have access.</p>
         <button 
           onClick={() => navigate('/events')}
-          className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-full font-bold hover:bg-indigo-500 transition-colors"
+          className="btn-primary"
         >
-          Back to Events
+          Return to Events
         </button>
       </div>
     );
   }
 
+  const handleCheckIn = async () => {
+    if (activeSession) {
+      await checkIn(activeSession.id, event.id);
+    }
+  };
+
   const typeInfo = EVENT_TYPES.find(t => t.value === event.eventType);
 
   return (
-    <div className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Hero Pass Section */}
-      <div className="relative group">
-        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 to-cyan-500 rounded-[2.5rem] blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
-        <div className="relative bg-slate-900 border border-slate-800 rounded-[2.5rem] overflow-hidden shadow-2xl">
-          <div className="md:flex">
-            <div className="md:w-2/3 p-8 md:p-12 space-y-6">
-              <div className="flex items-center gap-3">
-                <span className="px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-bold uppercase tracking-widest">
-                  {typeInfo?.label || 'General Event'}
+    <div className="event-detail-page">
+      
+      <button 
+        onClick={() => navigate('/events')}
+        className="btn-back"
+      >
+        <ChevronLeft size={16} /> Back to Events
+      </button>
+
+      {/* Main Header */}
+      <div className="event-detail-header">
+        <div className="event-tags-row">
+            <span className="event-tag-primary">
+                {typeInfo?.label || 'General Event'}
+            </span>
+            {activeSession ? (
+                <span className="event-tag-live">
+                    <span className="live-dot"></span>
+                    HAPPENING NOW
                 </span>
-                <span className="text-slate-500">•</span>
-                <span className="text-slate-400 text-sm font-medium">#{event.id}</span>
-              </div>
-              
-              <h1 className="text-4xl md:text-5xl font-black text-white leading-tight">
-                {event.title}
-              </h1>
+            ) : (
+                <span className="event-tag-upcoming">Upcoming</span>
+            )}
+        </div>
+        
+        <h1 className="event-hero-title">{event.title}</h1>
 
-              <div className="grid grid-cols-2 gap-6 pt-4">
-                <div className="space-y-1">
-                  <div className="text-slate-500 text-xs font-bold uppercase tracking-wider">Date</div>
-                  <div className="text-white font-bold">{new Date(event.date).toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}</div>
-                </div>
-                <div className="space-y-1">
-                  <div className="text-slate-500 text-xs font-bold uppercase tracking-wider">Time</div>
-                  <div className="text-white font-bold">{event.timeSlot?.split('_').join(' ').toUpperCase()}</div>
-                </div>
-              </div>
+        <div className="event-meta-row">
+            <div className="event-meta-item">
+                <Calendar size={18} />
+                <span>{event.date}</span>
             </div>
-
-            <div className="md:w-1/3 bg-slate-800/50 border-t md:border-t-0 md:border-l border-slate-700/50 p-8 flex flex-col items-center justify-center text-center space-y-6">
-              <div className="text-6xl mb-2">{typeInfo?.icon || '📅'}</div>
-              <div className="space-y-1">
-                <div className="text-slate-400 text-sm">Venue Integrity</div>
-                <div className="text-2xl font-black text-cyan-400">98.2%</div>
-              </div>
-              <button 
-                onClick={() => navigate('/check-in')}
-                className="w-full py-4 bg-white text-slate-900 rounded-2xl font-black text-lg hover:scale-105 transition-transform active:scale-95 shadow-xl shadow-white/5"
-              >
-                CHECK IN NOW
-              </button>
+            <div className="event-meta-item">
+                <Clock size={18} />
+                <span>{event.timeSlot?.split('_').join(' ').toUpperCase()}</span>
             </div>
-          </div>
+            <div className="event-meta-item">
+                <MapPin size={18} />
+                <span>{venue?.name || 'TBD'}</span>
+            </div>
         </div>
       </div>
 
-      {/* Intelligence Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 bg-slate-800/30 border border-slate-700/50 p-8 rounded-[2rem] space-y-4">
-          <h3 className="text-xl font-bold text-white flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-            Event Brief
-          </h3>
-          <p className="text-slate-400 leading-relaxed text-lg">
-            {event.description || "Join us for an exclusive CampusOS powered event. Experience the next generation of campus engagement."}
-          </p>
-          <div className="pt-4 flex flex-wrap gap-4">
-            <div className="bg-slate-700/30 px-4 py-2 rounded-xl border border-slate-600/30 text-slate-300 text-sm">
-              👥 {event.expectedAttendance || 0} Expected
+      {/* Grid Layout */}
+      <div className="event-layout-grid">
+        
+        {/* Left Column: Details */}
+        <div className="event-main-col">
+          <div className="event-block">
+            <h3 className="block-title">
+              <Info /> Event Details
+            </h3>
+            <p className="event-desc-text">
+              {event.description || "Join us for this exciting event. An opportunity to connect, learn, and grow your network on campus. Don't forget to mark your attendance and participate!"}
+            </p>
+            
+            <div className="event-stats-grid">
+              <div className="event-stat-card">
+                <div className="stat-icon">
+                  <Users size={24} />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Expected Attendees</div>
+                  <div className="stat-value">{event.expectedAttendance || 'TBD'}</div>
+                </div>
+              </div>
+              <div className="event-stat-card">
+                <div className="stat-icon primary">
+                  <MapPin size={24} />
+                </div>
+                <div className="stat-content">
+                  <div className="stat-label">Location</div>
+                  <div className="stat-value">{venue?.address || 'TBD'}</div>
+                </div>
+              </div>
             </div>
-            <div className="bg-slate-700/30 px-4 py-2 rounded-xl border border-slate-600/30 text-slate-300 text-sm">
-              📍 {event.venueName || 'Main Campus'}
+          </div>
+
+          <div className="event-block organizer-block">
+            <div className="org-avatar">
+               🏛️
+            </div>
+            <div className="org-info">
+              <p className="org-label">Organized By</p>
+              <h3 className="org-name">{event.clubName || 'General Campus Team'}</h3>
+              <p className="org-sub">Verified University Organization</p>
+            </div>
+            <div className="org-badge">
+               <ShieldCheck size={16} />
+               <span>Trusted</span>
             </div>
           </div>
         </div>
 
-        <div className="bg-indigo-600/10 border border-indigo-500/20 p-8 rounded-[2rem] flex flex-col justify-between">
-          <div>
-            <h3 className="text-lg font-bold text-indigo-300 mb-2">Organizer</h3>
-            <div className="text-2xl font-black text-white">{event.clubName}</div>
-          </div>
-          <div className="mt-8 pt-8 border-t border-indigo-500/10">
-            <div className="text-sm text-indigo-400 font-bold mb-1 uppercase tracking-tighter">Status</div>
-            <div className="flex items-center gap-2 text-white font-bold">
-              <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
-              Live & Open
-            </div>
+        {/* Right Column: Actions & Scanner */}
+        <div className="event-side-col">
+          <div className="scanner-block">
+             {activeSession ? (
+               <>
+                  <div className="scanner-icon-wrap">
+                    <Scan size={36} className="text-green-400" style={{ color: '#34d399' }} />
+                  </div>
+                  
+                  <h3 className="scanner-title">Event is Live</h3>
+                  <p className="scanner-subtitle">Scan to mark your attendance</p>
+
+                  <div className="qr-container">
+                    <img 
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=UNIFLOW_CHECKIN_${activeSession.id}`} 
+                      alt="Event QR Code Scanner"
+                    />
+                  </div>
+
+                  <div className="checkin-stats">
+                     <div className="stat-box">
+                       <div className="stat-box-label">Checked In</div>
+                       <div className="stat-box-value">{activeSession.attendeeCount || 0}</div>
+                     </div>
+                     <Users size={24} style={{ color: 'var(--text-tertiary)' }} />
+                  </div>
+
+                  {hasAttended ? (
+                    <div className="btn-checked-in">
+                       <CheckCircle2 size={20} />
+                       <span>CHECKED IN</span>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={handleCheckIn}
+                      className="btn-checkin"
+                    >
+                      CHECK-IN (TAP TO DEMO)
+                    </button>
+                  )}
+               </>
+             ) : (
+               <>
+                  <div className="scanner-icon-wrap disabled">
+                    <Ticket size={36} style={{ color: 'var(--text-tertiary)' }} />
+                  </div>
+                  <h3 className="scanner-title">Check-in Unavailable</h3>
+                  <p className="scanner-subtitle" style={{ marginBottom: 0 }}>This event is not currently live.</p>
+               </>
+             )}
           </div>
         </div>
       </div>

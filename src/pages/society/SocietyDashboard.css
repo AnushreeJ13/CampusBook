@@ -1,11 +1,11 @@
 /* ============================================
    SOCIETY DASHBOARD — "Event Organizer"
-   Bold pink-purple pink-purple, creative, dynamic
+   Bold pink-purple, creative, dynamic
    ============================================ */
 
 /* ---------- Hero / Header ---------- */
 .society-hero {
-  background: linear-gradient(135deg, #e85d9b 0%, #d946ef 40%, #a855f7 70%, #8b5cf6 100%);
+  background: var(--hero-gradient-society, linear-gradient(135deg, #e85d9b 0%, #d946ef 40%, #a855f7 70%, #8b5cf6 100%));
   background-size: 300% 300%;
   animation: gradientShift 10s ease infinite;
   border-radius: var(--radius-xl);
@@ -129,8 +129,8 @@
 
 .society-stat:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 30px rgba(232, 93, 155, 0.08);
-  border-color: rgba(232, 93, 155, 0.2);
+  box-shadow: 0 12px 30px var(--shadow-color-society, rgba(232, 93, 155, 0.08));
+  border-color: var(--accent-society-soft);
 }
 
 .society-stat:hover::after {
@@ -192,8 +192,8 @@
 
 /* ---------- Revision Alert ---------- */
 .society-revision-alert {
-  background: linear-gradient(135deg, white 0%, var(--status-warning-soft) 100%);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: var(--bg-variant);
+  border: 1px solid var(--status-warning-soft);
   border-left: 4px solid var(--status-warning);
   border-radius: var(--radius-lg);
   padding: var(--space-xl);
@@ -220,7 +220,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-md);
-  background: white;
+  background: var(--bg-card);
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
   box-shadow: var(--shadow-xs);
@@ -230,7 +230,7 @@
 
 .society-revision-item:hover {
   transform: translateX(4px);
-  border-color: rgba(245, 158, 11, 0.4);
+  border-color: var(--status-warning-soft);
 }
 
 .society-revision-info { flex: 1; min-width: 0; padding-right: var(--space-lg); }
@@ -310,7 +310,7 @@
 .society-proposal-card:hover {
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
-  border-color: var(--accent-society-light);
+  border-color: var(--accent-society-soft);
 }
 
 .society-proposal-card:hover::before {

@@ -1,0 +1,254 @@
+[
+  {
+    "id": "e001",
+    "title": "ML Model Deployment Bootcamp",
+    "domain": "AI/ML",
+    "tags": [
+      "machine_learning",
+      "python",
+      "data_analysis",
+      "AI"
+    ],
+    "required_skills": [
+      "python",
+      "machine_learning"
+    ],
+    "description": "Hands-on workshop on deploying ML models to production using FastAPI and Docker.",
+    "date": "2025-05-10",
+    "seats": 40,
+    "level": "intermediate"
+  },
+  {
+    "id": "e002",
+    "title": "Full Stack Dev Sprint",
+    "domain": "Web Dev",
+    "tags": [
+      "web_development",
+      "react",
+      "nodejs",
+      "open_source"
+    ],
+    "required_skills": [
+      "react",
+      "nodejs"
+    ],
+    "description": "48-hour sprint to build and deploy a full-stack web application from scratch.",
+    "date": "2025-05-15",
+    "seats": 60,
+    "level": "intermediate"
+  },
+  {
+    "id": "e003",
+    "title": "Data Science Hackathon",
+    "domain": "AI/ML",
+    "tags": [
+      "data_analysis",
+      "machine_learning",
+      "statistics",
+      "python",
+      "hackathons"
+    ],
+    "required_skills": [
+      "python",
+      "data_analysis"
+    ],
+    "description": "Compete to build the best predictive model on a real-world dataset.",
+    "date": "2025-05-18",
+    "seats": 80,
+    "level": "beginner"
+  },
+  {
+    "id": "e004",
+    "title": "IoT & Embedded Systems Workshop",
+    "domain": "Hardware",
+    "tags": [
+      "IoT",
+      "embedded_systems",
+      "circuit_design",
+      "robotics"
+    ],
+    "required_skills": [
+      "c_programming",
+      "embedded_systems"
+    ],
+    "description": "Build smart sensor networks using Raspberry Pi and Arduino.",
+    "date": "2025-05-20",
+    "seats": 30,
+    "level": "intermediate"
+  },
+  {
+    "id": "e005",
+    "title": "UI/UX Design Jam",
+    "domain": "Design",
+    "tags": [
+      "ui_design",
+      "figma",
+      "user_research",
+      "design",
+      "startups"
+    ],
+    "required_skills": [
+      "figma",
+      "ui_design"
+    ],
+    "description": "24-hour design challenge to reimagine a campus app from scratch.",
+    "date": "2025-05-22",
+    "seats": 50,
+    "level": "beginner"
+  },
+  {
+    "id": "e006",
+    "title": "Startup Pitch Competition",
+    "domain": "Entrepreneurship",
+    "tags": [
+      "startups",
+      "public_speaking",
+      "entrepreneurship",
+      "finance",
+      "presentation"
+    ],
+    "required_skills": [
+      "public_speaking",
+      "presentation"
+    ],
+    "description": "Pitch your startup idea to a panel of VCs and angel investors.",
+    "date": "2025-05-25",
+    "seats": 100,
+    "level": "beginner"
+  },
+  {
+    "id": "e007",
+    "title": "Capture The Flag — Cybersecurity",
+    "domain": "Security",
+    "tags": [
+      "cybersecurity",
+      "linux",
+      "networking",
+      "python",
+      "hackathons"
+    ],
+    "required_skills": [
+      "linux",
+      "networking"
+    ],
+    "description": "Ethical hacking challenge across web, crypto, and forensics categories.",
+    "date": "2025-05-28",
+    "seats": 60,
+    "level": "intermediate"
+  },
+  {
+    "id": "e008",
+    "title": "Creative Tech Expo",
+    "domain": "Design",
+    "tags": [
+      "design",
+      "ui_design",
+      "illustration",
+      "open_source",
+      "startups"
+    ],
+    "required_skills": [
+      "figma"
+    ],
+    "description": "Showcase intersection of creativity and technology through interactive exhibits.",
+    "date": "2025-06-01",
+    "seats": 200,
+    "level": "beginner"
+  },
+  {
+    "id": "e009",
+    "title": "Robotics Challenge",
+    "domain": "Hardware",
+    "tags": [
+      "robotics",
+      "embedded_systems",
+      "circuit_design",
+      "matlab",
+      "IoT"
+    ],
+    "required_skills": [
+      "circuit_design",
+      "matlab"
+    ],
+    "description": "Build autonomous bots that navigate obstacle courses and complete tasks.",
+    "date": "2025-06-05",
+    "seats": 40,
+    "level": "advanced"
+  },
+  {
+    "id": "e010",
+    "title": "Finance & Fintech Summit",
+    "domain": "Finance",
+    "tags": [
+      "finance",
+      "financial_modelling",
+      "startups",
+      "leadership",
+      "ms_excel"
+    ],
+    "required_skills": [
+      "ms_excel"
+    ],
+    "description": "Panel discussions and workshops on fintech trends, valuation, and investment.",
+    "date": "2025-06-08",
+    "seats": 120,
+    "level": "beginner"
+  },
+  {
+    "id": "e011",
+    "title": "CAD & Manufacturing Workshop",
+    "domain": "Mechanical",
+    "tags": [
+      "cad_design",
+      "simulation",
+      "manufacturing",
+      "matlab"
+    ],
+    "required_skills": [
+      "cad_design"
+    ],
+    "description": "Learn advanced CAD simulation and rapid prototyping techniques.",
+    "date": "2025-06-10",
+    "seats": 30,
+    "level": "intermediate"
+  },
+  {
+    "id": "e012",
+    "title": "Investment Banking Case Study",
+    "domain": "Finance",
+    "tags": [
+      "finance",
+      "valuation",
+      "financial_modelling",
+      "public_speaking",
+      "ms_excel"
+    ],
+    "required_skills": [
+      "valuation",
+      "financial_modelling"
+    ],
+    "description": "Solve live M&A and IPO case studies presented by industry professionals.",
+    "date": "2025-06-12",
+    "seats": 50,
+    "level": "advanced"
+  },
+  {
+    "id": "e013",
+    "title": "Open Source Contribution Sprint",
+    "domain": "Web Dev",
+    "tags": [
+      "open_source",
+      "python",
+      "linux",
+      "web_development",
+      "hackathons"
+    ],
+    "required_skills": [
+      "python"
+    ],
+    "description": "Guided sprint to make your first meaningful open source contributions.",
+    "date": "2025-06-15",
+    "seats": 80,
+    "level": "beginner"
+  }
+]

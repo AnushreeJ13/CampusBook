@@ -1,0 +1,226 @@
+[
+    {
+        "id": "s001",
+        "name": "Aarav Sharma",
+        "year": 3,
+        "branch": "CSE",
+        "skills": [
+            "machine_learning",
+            "python",
+            "data_analysis",
+            "sql"
+        ],
+        "interests": [
+            "AI",
+            "startups",
+            "hackathons"
+        ],
+        "past_events": [
+            "e001",
+            "e003",
+            "e007"
+        ],
+        "cgpa": 8.4
+    },
+    {
+        "id": "s002",
+        "name": "Priya Mehta",
+        "year": 2,
+        "branch": "ECE",
+        "skills": [
+            "circuit_design",
+            "embedded_systems",
+            "c_programming",
+            "matlab"
+        ],
+        "interests": [
+            "IoT",
+            "robotics",
+            "electronics"
+        ],
+        "past_events": [
+            "e004",
+            "e009"
+        ],
+        "cgpa": 8.1
+    },
+    {
+        "id": "s003",
+        "name": "Rohan Gupta",
+        "year": 4,
+        "branch": "CSE",
+        "skills": [
+            "web_development",
+            "react",
+            "nodejs",
+            "ui_design"
+        ],
+        "interests": [
+            "startups",
+            "design",
+            "open_source"
+        ],
+        "past_events": [
+            "e002",
+            "e005",
+            "e008"
+        ],
+        "cgpa": 7.9
+    },
+    {
+        "id": "s004",
+        "name": "Sneha Iyer",
+        "year": 1,
+        "branch": "MBA",
+        "skills": [
+            "public_speaking",
+            "marketing",
+            "ms_excel",
+            "presentation"
+        ],
+        "interests": [
+            "finance",
+            "entrepreneurship",
+            "leadership"
+        ],
+        "past_events": [
+            "e006",
+            "e010"
+        ],
+        "cgpa": 7.6
+    },
+    {
+        "id": "s005",
+        "name": "Karan Patel",
+        "year": 3,
+        "branch": "Mechanical",
+        "skills": [
+            "cad_design",
+            "simulation",
+            "python",
+            "matlab"
+        ],
+        "interests": [
+            "robotics",
+            "manufacturing",
+            "IoT"
+        ],
+        "past_events": [
+            "e004",
+            "e011"
+        ],
+        "cgpa": 7.3
+    },
+    {
+        "id": "s006",
+        "name": "Ananya Singh",
+        "year": 2,
+        "branch": "CSE",
+        "skills": [
+            "machine_learning",
+            "python",
+            "data_analysis",
+            "statistics"
+        ],
+        "interests": [
+            "AI",
+            "research",
+            "data_science"
+        ],
+        "past_events": [
+            "e001",
+            "e003"
+        ],
+        "cgpa": 9.1
+    },
+    {
+        "id": "s007",
+        "name": "Vikram Nair",
+        "year": 4,
+        "branch": "Finance",
+        "skills": [
+            "financial_modelling",
+            "ms_excel",
+            "valuation",
+            "public_speaking"
+        ],
+        "interests": [
+            "finance",
+            "investing",
+            "startups"
+        ],
+        "past_events": [
+            "e006",
+            "e010",
+            "e012"
+        ],
+        "cgpa": 8.7
+    },
+    {
+        "id": "s008",
+        "name": "Meera Joshi",
+        "year": 1,
+        "branch": "Design",
+        "skills": [
+            "ui_design",
+            "figma",
+            "illustration",
+            "user_research"
+        ],
+        "interests": [
+            "design",
+            "creativity",
+            "startups"
+        ],
+        "past_events": [
+            "e005",
+            "e008"
+        ],
+        "cgpa": 8.3
+    },
+    {
+        "id": "s009",
+        "name": "Arjun Verma",
+        "year": 3,
+        "branch": "CSE",
+        "skills": [
+            "cybersecurity",
+            "networking",
+            "linux",
+            "python"
+        ],
+        "interests": [
+            "security",
+            "open_source",
+            "hackathons"
+        ],
+        "past_events": [
+            "e007",
+            "e013"
+        ],
+        "cgpa": 8.0
+    },
+    {
+        "id": "s010",
+        "name": "Pooja Reddy",
+        "year": 2,
+        "branch": "BBA",
+        "skills": [
+            "marketing",
+            "social_media",
+            "presentation",
+            "public_speaking"
+        ],
+        "interests": [
+            "entrepreneurship",
+            "leadership",
+            "design"
+        ],
+        "past_events": [
+            "e006",
+            "e008",
+            "e010"
+        ],
+        "cgpa": 7.8
+    }
+]

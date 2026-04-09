@@ -84,6 +84,7 @@ export const NOTIFICATION_TYPES = {
 };
 
 export const COLLEGES = [
+  { id: 'igdtuw', name: 'IGDTUW Delhi', shortName: 'IGDTUW', logo: '👩‍💻', theme: '#fffaff' },
   { id: 'iit_delhi', name: 'IIT Delhi', shortName: 'IITD', logo: '🏛️', theme: '#ebf4ff' },
   { id: 'iit_bombay', name: 'IIT Bombay', shortName: 'IITB', logo: '🏢', theme: '#f0fff4' },
   { id: 'bits_pilani', name: 'BITS Pilani', shortName: 'BITS', logo: '🏫', theme: '#fffaf0' },

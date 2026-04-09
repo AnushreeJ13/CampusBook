@@ -1,48 +1,53 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { subscribeToCollection, saveVenue, deleteVenue as dbDeleteVenue } from '../api';
+import { useAuth } from './AuthContext';
 import { MOCK_VENUES } from '../utils/mockData';
 
 const VenueContext = createContext(null);
 
 export function VenueProvider({ children }) {
-  const [venues, setVenues] = useState(() => {
-    try {
-      const saved = localStorage.getItem('campusbook_venues');
-      return saved ? JSON.parse(saved) : MOCK_VENUES;
-    } catch {
-      return MOCK_VENUES;
-    }
-  });
+  const { selectedCollege } = useAuth();
+  const [venues, setVenues] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const save = useCallback((data) => {
-    try { localStorage.setItem('campusbook_venues', JSON.stringify(data)); } catch {}
+  useEffect(() => {
+    if (!selectedCollege?.id) return;
+
+    const unsub = subscribeToCollection('venues', (data) => {
+      let filtered = data.filter(v => v.collegeId === selectedCollege.id);
+      if (filtered.length === 0) {
+          filtered = MOCK_VENUES; // Fallback to mock data if backend comes back empty due to 404
+      }
+      setVenues(filtered);
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, [selectedCollege]);
+
+  const addVenue = useCallback(async (venue) => {
+    const newVenue = { 
+      ...venue, 
+      id: `v${Date.now()}`,
+      collegeId: selectedCollege?.id,
+      createdAt: new Date().toISOString()
+    };
+    await saveVenue(newVenue);
+  }, [selectedCollege]);
+
+  const updateVenue = useCallback(async (id, updates) => {
+    const venue = venues.find(v => v.id === id);
+    if (!venue) return;
+    
+    await saveVenue({ ...venue, ...updates });
+  }, [venues]);
+
+  const deleteVenue = useCallback(async (id) => {
+    await dbDeleteVenue(id);
   }, []);
 
-  const addVenue = useCallback((venue) => {
-    setVenues(prev => {
-      const updated = [...prev, { ...venue, id: `v${Date.now()}` }];
-      save(updated);
-      return updated;
-    });
-  }, [save]);
-
-  const updateVenue = useCallback((id, updates) => {
-    setVenues(prev => {
-      const updated = prev.map(v => v.id === id ? { ...v, ...updates } : v);
-      save(updated);
-      return updated;
-    });
-  }, [save]);
-
-  const deleteVenue = useCallback((id) => {
-    setVenues(prev => {
-      const updated = prev.filter(v => v.id !== id);
-      save(updated);
-      return updated;
-    });
-  }, [save]);
-
   return (
-    <VenueContext.Provider value={{ venues, addVenue, updateVenue, deleteVenue }}>
+    <VenueContext.Provider value={{ venues, loading, addVenue, updateVenue, deleteVenue }}>
       {children}
     </VenueContext.Provider>
   );
@@ -55,3 +60,4 @@ export function useVenues() {
 }
 
 export default VenueContext;
+

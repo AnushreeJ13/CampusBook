@@ -1,187 +1,226 @@
+import { useEffect, useMemo } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
+import { useProfile } from '../../contexts/ProfileContext';
 import { PROPOSAL_STATUS } from '../../utils/constants';
-import { getAIRecommendations } from '../../utils/mlRecommender';
-import { Calendar, MapPin, TrendingUp, Cpu, Map, Clock, ArrowRight, Activity, Zap } from 'lucide-react';
+import { rankEvents } from '../../utils/recommendationEngine';
+import { 
+  Calendar, MapPin, TrendingUp, Cpu, Map, Clock, 
+  ArrowRight, Activity, Zap, Shield, Sparkles, Target, AlertCircle, Bookmark, BookmarkCheck
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import IntelligenceTicker from '../../components/intelligence/IntelligenceTicker';
+import EventRecommendations from '../../components/intelligence/EventRecommendations';
+import InterestProfileGraph from '../../components/intelligence/InterestProfileGraph';
+import InterestOnboarding from '../../components/profile/InterestOnboarding';
+import UniflowLogo from '../../components/UniflowLogo';
 import './StudentDashboard.css';
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
-  const { proposals, bookings } = useProposals();
+  const { user, toggleSavedEvent } = useAuth();
+  const { proposals } = useProposals();
   const { venues } = useVenues();
+  const { profile } = useProfile();
 
-  const upcomingEvents = proposals.filter(p => [PROPOSAL_STATUS.VENUE_BOOKED, PROPOSAL_STATUS.APPROVED].includes(p.status));
-  
-  // Real-time Machine Learning recommendations using the new Brain.js model!
-  // If you book an event, the Neural Network will instantly re-train to recommend similar events!
-  const myBookings = bookings?.filter(b => b.userId === user?.id) || [];
-  
-  // (Fallback: If you have 0 bookings, we temporarily feed it a simulated Hackathon history so you can see the AI working immediately)
-  const trainingHistory = myBookings.length > 0 ? myBookings : [{ proposalId: 'p1' }];
-  const aiRecommendations = getAIRecommendations(upcomingEvents, trainingHistory).slice(0, 2);
+  // Rank events using the actual intelligence engine
+  const rankedEvents = useMemo(() => {
+    const validEvents = proposals.filter(p => 
+      [PROPOSAL_STATUS.VENUE_BOOKED, PROPOSAL_STATUS.APPROVED].includes(p.status)
+    );
+    return rankEvents(validEvents, {
+      interests: profile?.interests || [],
+      skills: profile?.skills || []
+    });
+  }, [proposals, profile]);
+
+  // Campus Dashboard Metadata Calculations
+  const nodeCount = rankedEvents.length;
+  const sectorCount = venues.length;
+  const signalDensity = (profile?.telemetry?.totalEventsAttended || 0);
+
+  if (profile && !profile.onboardingComplete) {
+    return <InterestOnboarding />;
+  }
 
   return (
-    <div className="page-container pb-8">
-      {/* Hero Header */}
+    <div className="page-container student-dashboard-page">
+      <IntelligenceTicker />
+
+      {/* Campus Dashboard Hero Header */}
       <div className="student-hero">
         <div className="student-blob student-blob-1" />
         <div className="student-blob student-blob-2" />
         
         <div className="student-hero-content">
           <p className="student-greeting">
-            {new Date().getHours() < 12 ? 'Good morning' : new Date().getHours() < 17 ? 'Good afternoon' : 'Good evening'},
+            <Sparkles size={14} className="text-yellow-400" /> 
+            {new Date().getHours() < 12 ? 'Good Morning!' : new Date().getHours() < 17 ? 'Good Afternoon!' : 'Good Evening!'}
           </p>
-          <h1>{user?.name?.split(' ')[0] || 'Student'}</h1>
-          <p className="student-hero-sub">Ready to discover what's happening on campus today?</p>
+          <h1>Welcome Back, {user?.name || 'Student'}</h1>
+          <p className="student-hero-sub">Explore your personalized campus feed. We've matched the best events based on your interests.</p>
         </div>
       </div>
 
-      {/* Stats - Clean SaaS Layout like Society */}
-      <div className="student-stats-grid">
-        <Link to="/events" className="student-stat stagger-1">
-          <div className="student-stat-icon" style={{background: '#eff6ff', color: '#3b82f6'}}>
-            <Calendar size={24} strokeWidth={2.5} />
+      <div className="dashboard-content-inner">
+        {/* Campus Insights Grid */}
+        <div className="student-stats-grid">
+          <div className="student-stat">
+            <div className="student-stat-icon"><Zap size={24} /></div>
+            <div className="student-stat-info">
+              <span className="student-stat-value">{profile?.interests?.length || 0}</span>
+              <span className="student-stat-label">Active Interest Domains</span>
+            </div>
           </div>
-          <div className="student-stat-info">
-            <div className="student-stat-value">{upcomingEvents.length}</div>
-            <div className="student-stat-label">Upcoming Events</div>
-          </div>
-        </Link>
-        
-        <Link to="/venues" className="student-stat stagger-2">
-          <div className="student-stat-icon" style={{background: '#fce7f3', color: '#ec4899'}}>
-            <Map size={24} strokeWidth={2.5} />
-          </div>
-          <div className="student-stat-info">
-            <div className="student-stat-value">{venues.length}</div>
-            <div className="student-stat-label">Campus Venues</div>
-          </div>
-        </Link>
-        
-        <Link to="/events" className="student-stat stagger-3">
-          <div className="student-stat-icon" style={{background: '#fef3c7', color: '#f59e0b'}}>
-            <TrendingUp size={24} strokeWidth={2.5} />
-          </div>
-          <div className="student-stat-info">
-            <div className="student-stat-value">{proposals.filter(p => String(p.status).toLowerCase().includes('book')).length}</div>
-            <div className="student-stat-label">Events This Month</div>
-          </div>
-        </Link>
-        
-        <Link to="/notifications" className="student-stat stagger-4">
-          <div className="student-stat-icon" style={{background: '#dcfce7', color: '#22c55e'}}>
-            <Activity size={24} strokeWidth={2.5} />
-          </div>
-          <div className="student-stat-info">
-            <div className="student-stat-value">{bookings?.length || 0}</div>
-            <div className="student-stat-label">Active Bookings</div>
-          </div>
-        </Link>
-      </div>
 
-      {/* --- REAL-TIME AI RECOMMENDER (Brain.js Neural Network Output) --- */}
-      {aiRecommendations.length > 0 && (
-        <div className="ai-recommendation-section animate-card-entrance stagger-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span className="ai-badge"><Cpu size={12}/> Brain.js Active</span>
-            <h2 style={{fontSize: 'var(--font-lg)', fontWeight: 800, color: '#86198f', margin: 0}}>Just For You</h2>
+          <div className="student-stat">
+            <div className="student-stat-icon"><Target size={24} /></div>
+            <div className="student-stat-info">
+              <span className="student-stat-value">{profile?.joinedEvents?.length || 0}</span>
+              <span className="student-stat-label">Events Joined</span>
+            </div>
           </div>
-          <p style={{color: '#a21caf', fontSize: 'var(--font-sm)', opacity: 0.9, margin: 0}}>
-            Our neural network has analyzed your event history to find these perfect matches.
-          </p>
 
-          <div className="ai-recommendation-grid">
-            {aiRecommendations.map((event, i) => {
-              const venue = venues.find(v => v.id === event.venueId);
-              return (
-                <Link to={`/events/${event.id}`} key={`ai-${event.id}`} className="ai-card" style={{animationDelay: `${i*0.1}s`}}>
-                  <div className="match-score-badge">
-                    <span className="match-score">{event.matchPercentage}%</span>
-                    <span className="match-label">Match</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex justify-between items-start">
-                      <h3 className="student-event-title" style={{color: '#4a044e'}}>{event.title}</h3>
-                    </div>
-                    <span className="student-event-club" style={{color: '#c026d3', display: 'flex', alignItems: 'center', gap: 4}}><Zap size={12}/> {event.clubName}</span>
-                    <div className="flex items-center gap-sm mt-3" style={{fontSize: 12, color: '#701a75', fontWeight: 600}}>
-                       <Calendar size={12}/> {event.date} &nbsp; <MapPin size={12}/> {venue?.name || 'TBD'}
-                    </div>
-                  </div>
+          <div className="student-stat">
+            <div className="student-stat-icon"><Map size={24} /></div>
+            <div className="student-stat-info">
+              <span className="student-stat-value">{sectorCount}</span>
+              <span className="student-stat-label">Total Locations</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-main-grid">
+          <div className="main-left">
+            <div className="grid-header">
+              <Sparkles size={18} className="text-yellow-400" />
+              <h2>Personal Recommendations</h2>
+              <Link to="/events" className="view-all">Find More <ArrowRight size={14} /></Link>
+            </div>
+
+            {/* Neural AI Recommender Component */}
+            <div className="animate-card-entrance" style={{animationDelay: '0.45s'}}>
+              <EventRecommendations />
+            </div>
+
+            {/* Global Event Grid */}
+            <div className="feed-section">
+              <div className="student-section-header">
+                <div className="section-header-left">
+                  <div className="section-dot" />
+                  <h2 className="section-title">Live Event Feed</h2>
+                </div>
+                <Link to="/events" className="btn-primary-link">
+                  View All Events 
+                  <ArrowRight size={16} className="arrow-icon" />
                 </Link>
-              );
-            })}
+              </div>
+              
+              <div className="student-events-grid">
+                {rankedEvents.slice(0, 6).map((event, i) => {
+                  const venue = venues.find(v => v.id === event.venueId);
+                  return (
+                    <Link 
+                      key={event.id} 
+                      to={`/events/${event.id}`}
+                      className="student-event-card"
+                      style={{animationDelay: `${0.6 + (i * 0.1)}s`}}
+                    >
+                    <div className="card-scanner-line" />
+                    <div className="event-card-header flex justify-between items-center w-full">
+                      <div className="flex gap-sm">
+                        <div className="event-type-badge">EVENT</div>
+                        {event.affinityScore > 0.7 && (
+                          <span className="event-match-badge">
+                            <Sparkles size={12} /> Matched
+                          </span>
+                        )}
+                      </div>
+                      <button 
+                        className="save-event-btn" 
+                        onClick={(e) => {
+                          e.preventDefault();
+                          toggleSavedEvent(event.id);
+                        }}
+                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10, padding: '4px' }}
+                      >
+                        {user?.savedEvents?.includes(event.id) ? (
+                          <BookmarkCheck size={18} fill="var(--accent)" color="var(--accent)" />
+                        ) : (
+                          <Bookmark size={18} color="var(--text-tertiary)" className="hover:text-accent transition-colors" />
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="event-card-poster" style={{ margin: '12px 0', borderRadius: '8px', overflow: 'hidden', height: '120px', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {event.posterUrl && event.posterUrl !== 'default-logo' ? (
+                        <img src={event.posterUrl} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <div style={{ opacity: 0.3, transform: 'scale(1.5)' }}>
+                          <UniflowLogo />
+                        </div>
+                      )}
+                    </div>
+                    
+                    <h3 className="student-event-title">{event.title}</h3>
+                    <span className="student-event-club">{event.clubName || 'General'}</span>
+                    
+                    <div className="student-event-details">
+                      <div className="detail-item">
+                        <Clock size={14} /> 
+                        {event.date}
+                      </div>
+                      <div className="detail-item">
+                        <MapPin size={14} /> 
+                        {venue?.name || 'TBD'}
+                      </div>
+                    </div>
+                  </Link>
+                );
+              })}
+              
+              {rankedEvents.length === 0 && (
+                <div className="empty-feed-state glass-pane">
+                  <div className="status-msg flex flex-col items-center gap-4">
+                    <AlertCircle size={48} className="text-dim opacity-30" /> 
+                    <span className="text-xs text-dim">No updates available</span>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Upcoming Events Grid */}
-      <div className="mt-12 mb-10">
-        <div className="student-section-header">
-          <h2>Latest Events</h2>
-          <Link to="/events" className="btn btn-ghost btn-sm text-accent-student">View All <ArrowRight size={16}/></Link>
-        </div>
-        
-        {/* Header Stats */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <Link to="/events" className="bg-indigo-600 rounded-[2rem] p-6 text-white group hover:scale-[1.02] transition-transform">
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-3xl">🗓️</span>
-              <div className="bg-white/20 p-2 rounded-xl group-hover:rotate-12 transition-transform">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
-              </div>
+          <div className="main-right">
+            <div className="grid-header">
+              <TrendingUp size={18} />
+              <h2>Interest Pulse</h2>
             </div>
-            <div className="text-2xl font-black">{upcomingEvents.length}</div>
-            <div className="text-indigo-100 text-sm font-bold opacity-80 uppercase tracking-wider">Live Events</div>
-          </Link>
-          <Link to="/venues" className="bg-slate-800 rounded-[2rem] p-6 text-white group hover:scale-[1.02] transition-transform">
-            <div className="flex justify-between items-start mb-4">
-              <span className="text-3xl">🏛️</span>
-              <div className="bg-white/10 p-2 rounded-xl group-hover:-rotate-12 transition-transform">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-              </div>
+            <div className="intelligence-panel">
+              <InterestProfileGraph />
             </div>
-            <div className="text-2xl font-black">{venues.length}+</div>
-            <div className="text-slate-400 text-sm font-bold opacity-80 uppercase tracking-wider">Venues</div>
-          </Link>
-        </div>
 
-        {/* Event Cards Mapping */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {upcomingEvents.slice(0, 6).map((event) => {
-            const venue = venues.find(v => v.id === event.venueId);
-            return (
-              <Link 
-                key={event.id} 
-                to={`/events/${event.id}`}
-                className="group bg-white border border-slate-200 rounded-[2rem] p-6 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-500"
-              >
-                <div className="flex justify-between items-start mb-4">
-                  <div className="student-event-icon-box">
-                    <Calendar size={20} className="text-accent-student" />
-                  </div>
-                  <span className="badge badge-success">✓ Confirmed</span>
-                </div>
-                
-                <div className="mb-4 flex-1">
-                  <h3 className="student-event-title">{event.title}</h3>
-                  <span className="student-event-club">by {event.clubName}</span>
-                </div>
-                
-                <div className="student-event-details">
-                  <div className="flex items-center gap-sm font-medium"><Clock size={14} className="text-accent-student" /> {event.date}</div>
-                  <div className="flex items-center gap-sm font-medium"><MapPin size={14} className="text-accent-student" /> {venue?.name || 'TBD'}</div>
-                </div>
-              </Link>
-            );
-          })}
-          {upcomingEvents.length === 0 && (
-            <div className="col-span-full text-center py-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed">
-              No upcoming events right now. Check back later!
+            <div className="grid-header mt-8">
+              <BookmarkCheck size={18} className="text-yellow-400" />
+              <h2>Saved Events</h2>
             </div>
-          )}
+            <div className="intelligence-panel">
+              {user?.savedEvents && user.savedEvents.length > 0 ? (
+                <div className="flex flex-col gap-sm">
+                  {proposals.filter(p => user.savedEvents.includes(p.id)).map(event => (
+                    <Link key={event.id} to={`/events/${event.id}`} className="p-3 bg-card border border-border-secondary rounded-lg hover:border-accent transition-colors">
+                      <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 600 }}>{event.title}</h4>
+                      <p className="text-xs text-dim mt-1">{event.date}</p>
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <div className="empty-state">
+                  <span className="text-xs text-dim">No saved events. Bookmark events to review them here.</span>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

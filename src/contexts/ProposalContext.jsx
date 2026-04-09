@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, useCallback, useEffect } from 'react';
-import { MOCK_PROPOSALS, MOCK_NOTIFICATIONS, MOCK_BOOKINGS } from '../utils/mockData';
+import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 import { PROPOSAL_STATUS } from '../utils/constants';
+import localEvents from '../data/events.json';
 import { 
   saveProposal, 
   saveNotification, 
@@ -11,14 +11,12 @@ import {
 } from '../api';
 import { useAuth } from './AuthContext';
 import { sendStatusEmail } from '../utils/mailer';
-import { MOCK_USERS } from '../utils/mockData';
 
 const ProposalContext = createContext(null);
 
 export function ProposalProvider({ children }) {
   const { user, selectedCollege } = useAuth();
   const [proposals, setProposals] = useState([]);
-  const [notifications, setNotifications] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -29,58 +27,88 @@ export function ProposalProvider({ children }) {
       return;
     }
 
-    const collegeId = selectedCollege.id;
+    const collegeId = selectedCollege?.id;
+    if (!collegeId) {
+      setLoading(false);
+      return;
+    }
 
     const unsubProposals = subscribeToCollection('proposals', (data) => {
-        let localDrafts = [];
-        try {
-            const saved = localStorage.getItem(`campusos_drafts_${collegeId}`);
-            if (saved) localDrafts = JSON.parse(saved);
-        } catch(e) {}
-
         // Filter by college_id
-        let combined = data.filter(p => p.collegeId === collegeId);
-        
-        MOCK_PROPOSALS.forEach(mock => {
-           if (mock.collegeId === collegeId && !combined.find(d => d.id === mock.id)) {
-             combined.push(mock);
-           }
-        });
-
-        localDrafts.forEach(draft => {
-           if (!combined.find(d => d.id === draft.id)) combined.unshift(draft);
-        });
-
+        const combined = data.filter(p => p.collegeId === collegeId);
         setProposals(combined);
     });
 
-    const unsubNotifs = subscribeToCollection('notifications', (data) => {
-        const combined = [...data];
-        MOCK_NOTIFICATIONS.forEach(mock => {
-           if (mock.collegeId === collegeId && !data.find(d => d.id === mock.id)) {
-             combined.push(mock);
-           }
-        });
-        setNotifications(combined.filter(n => n.userId === user.uid || n.userId === user.id));
-    });
+
 
     const unsubBookings = subscribeToCollection('bookings', (data) => {
-        const combined = [...data];
-        MOCK_BOOKINGS.forEach(mock => {
-           if (mock.collegeId === collegeId && !data.find(d => d.id === mock.id)) {
-             combined.push(mock);
-           }
-        });
+        const combined = data.filter(b => b.collegeId === collegeId || !b.collegeId);
         setBookings(combined);
         setLoading(false);
     });
 
     return () => {
         unsubProposals();
-        unsubNotifs();
         unsubBookings();
     };
   }, [user, selectedCollege]);
+
+  // -- MOCK DATA BRIDGING --
+  const normalizedMockSignals = useMemo(() => {
+    return localEvents.map(event => {
+      // Shift dates forward (2025 -> 2026+) so recommendation engine likes them
+      const originalDate = new Date(event.date);
+      const normalizedDate = new Date(originalDate);
+      normalizedDate.setFullYear(originalDate.getFullYear() + 1); // 2025 -> 2026
+      
+      return {
+        ...event,
+        id: `local_${event.id}`,
+        category: event.domain, // Map domain to category
+        eventType: event.domain?.toLowerCase().replace(/\s/g, '_'),
+        expectedAttendance: event.seats || 100,
+        date: normalizedDate.toISOString().split('T')[0],
+        status: PROPOSAL_STATUS.APPROVED,
+        collegeId: selectedCollege?.id || 'all', // Make visible globally if needed
+        isMockSignal: true
+      };
+    });
+  }, [selectedCollege]);
+
+  const pendingMockProposals = useMemo(() => {
+    return [
+      {
+        id: 'mock_pending_1',
+        title: 'Tech Symposium 2026',
+        description: 'Annual technical symposium for tech enthusiasts.',
+        clubName: 'Tech Society',
+        clubId: 'c1',
+        date: '2026-05-12',
+        expectedAttendees: 50,
+        status: PROPOSAL_STATUS.FACULTY_REVIEW,
+        currentReviewer: 'vijay@gmail.com', // faculty
+        collegeId: selectedCollege?.id,
+        createdAt: new Date().toISOString().split('T')[0],
+      },
+      {
+        id: 'mock_pending_2',
+        title: 'Cultural Night Auditions',
+        description: 'Auditions for the annual cultural night fest.',
+        clubName: 'Dance Society',
+        clubId: 'c2',
+        date: '2026-05-18',
+        expectedAttendees: 150,
+        status: PROPOSAL_STATUS.FACULTY_REVIEW,
+        currentReviewer: 'vijay@gmail.com',
+        collegeId: selectedCollege?.id,
+        createdAt: new Date().toISOString().split('T')[0],
+      }
+    ];
+  }, [selectedCollege]);
+
+  const mergedProposals = useMemo(() => {
+    return [...proposals, ...normalizedMockSignals, ...pendingMockProposals];
+  }, [proposals, normalizedMockSignals, pendingMockProposals]);
 
   // -- ACTIONS --
 
@@ -116,27 +144,18 @@ export function ProposalProvider({ children }) {
       ],
     };
     
-    // Save to local drafts
-    try {
-        const collegeId = selectedCollege?.id;
-        const saved = localStorage.getItem(`campusos_drafts_${collegeId}`);
-        const localDrafts = saved ? JSON.parse(saved) : [];
-        localDrafts.unshift(newProposal);
-        localStorage.setItem(`campusos_drafts_${collegeId}`, JSON.stringify(localDrafts));
-    } catch(e) {}
-
     // Optimistically update
     setProposals(prev => [newProposal, ...prev]);
 
     try {
       await saveProposal(newProposal);
     } catch(e) {
-      console.warn("Firebase write blocked. Saved safely in local storage fallback.");
+      console.error("Supabase write failed:", e);
     }
     
     // Notify appropriate reviewer
     addNotification({
-      userId: proposal.currentReviewer || 'FACULTY_UID', // Mock or real UID
+      userId: proposal.currentReviewer || 'FACULTY_UID',
       type: 'submission',
       title: 'New Proposal',
       message: `${proposal.clubName} submitted "${proposal.title}" for review`,
@@ -144,7 +163,7 @@ export function ProposalProvider({ children }) {
     });
     
     return newProposal;
-  }, [user, addNotification]);
+  }, [user, addNotification, selectedCollege]);
 
   const updateProposalStatus = useCallback(async (proposalId, newStatus, reviewerId, reviewerName, note, nextReviewer) => {
     const proposal = proposals.find(p => p.id === proposalId);
@@ -168,22 +187,6 @@ export function ProposalProvider({ children }) {
       updatedAt: new Date().toISOString(),
       auditTrail: [...(proposal.auditTrail || []), auditEntry],
     };
-
-    // Update local storage drafts so it stays approved across refreshes
-    try {
-        const saved = localStorage.getItem('campusbook_drafts');
-        if (saved) {
-             const localDrafts = JSON.parse(saved);
-             const index = localDrafts.findIndex(p => p.id === proposalId);
-             if (index > -1) {
-                 localDrafts[index] = updatedProposal;
-                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
-             }
-        }
-    } catch(e) {}
-
-    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
-    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
 
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
 
@@ -235,21 +238,6 @@ export function ProposalProvider({ children }) {
       auditTrail: [...(proposal.auditTrail || []), ...auditEntries],
     };
 
-    try {
-        const saved = localStorage.getItem('campusbook_drafts');
-        if (saved) {
-             const localDrafts = JSON.parse(saved);
-             const index = localDrafts.findIndex(p => p.id === proposalId);
-             if (index > -1) {
-                 localDrafts[index] = updatedProposal;
-                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
-             }
-        }
-    } catch(e) {}
-
-    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
-    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
-
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
 
     try {
@@ -265,6 +253,7 @@ export function ProposalProvider({ children }) {
       id: `b${Date.now()}`,
       venueId: proposal.venueId,
       proposalId,
+      collegeId: selectedCollege?.id,
       date: proposal.date,
       timeSlot: proposal.timeSlot,
       status: 'confirmed',
@@ -285,21 +274,6 @@ export function ProposalProvider({ children }) {
       }],
     };
 
-    try {
-        const saved = localStorage.getItem('campusbook_drafts');
-        if (saved) {
-             const localDrafts = JSON.parse(saved);
-             const index = localDrafts.findIndex(p => p.id === proposalId);
-             if (index > -1) {
-                 localDrafts[index] = updatedProposal;
-                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
-             }
-        }
-    } catch(e) {}
-
-    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
-    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
-
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
 
     try {
@@ -313,21 +287,19 @@ export function ProposalProvider({ children }) {
       message: `Venue has been booked for "${proposal.title}"`,
       proposalId,
     });
-  }, [proposals, addNotification]);
+  }, [proposals, addNotification, selectedCollege]);
 
   const markNotificationRead = useCallback(async (notifId) => {
     await markNotifRead(notifId);
   }, []);
 
   const resetData = useCallback(() => {
-    // Optional: clear firestore collections? Safer to just log out or reset local state if any.
     console.log("Resetting data...");
   }, []);
 
   return (
     <ProposalContext.Provider value={{
-      proposals,
-      notifications,
+      proposals: mergedProposals,
       bookings,
       loading,
       submitProposal,
@@ -350,3 +322,4 @@ export function useProposals() {
 }
 
 export default ProposalContext;
+

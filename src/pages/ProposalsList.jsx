@@ -2,8 +2,9 @@ import { useProposals } from '../contexts/ProposalContext';
 import { useVenues } from '../contexts/VenueContext';
 import { STATUS_LABELS, PROPOSAL_STATUS } from '../utils/constants';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Search, Filter } from 'lucide-react';
+import { ArrowRight, Search } from 'lucide-react';
 import { useState } from 'react';
+import './ProposalsList.css';
 
 export default function ProposalsList() {
   const { proposals } = useProposals();
@@ -39,12 +40,21 @@ export default function ProposalsList() {
         <p>View and manage event proposals</p>
       </div>
 
-      <div className="filter-row" style={{ marginBottom: 'var(--space-xl)' }}>
-        <div className="filter-search">
-          <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-          <input className="input-field" placeholder="Search proposals..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} style={{ paddingLeft: 36 }} />
+      <div className="proposals-filter-row">
+        <div className="proposals-search-wrap">
+          <Search size={16} className="proposals-search-icon" />
+          <input 
+            className="input-field proposals-search-input" 
+            placeholder="Search proposals..." 
+            value={searchQuery} 
+            onChange={e => setSearchQuery(e.target.value)} 
+          />
         </div>
-        <select className="input-field" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ maxWidth: 200 }}>
+        <select 
+          className="input-field proposals-status-select" 
+          value={statusFilter} 
+          onChange={e => setStatusFilter(e.target.value)}
+        >
           <option value="">All Statuses</option>
           {Object.entries(STATUS_LABELS).map(([k, v]) => (
             <option key={k} value={k}>{v}</option>
@@ -71,7 +81,7 @@ export default function ProposalsList() {
               const venue = venues.find(v => v.id === p.venueId);
               return (
                 <tr key={p.id}>
-                  <td style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{p.title}</td>
+                  <td className="proposal-title-cell">{p.title}</td>
                   <td>{p.clubName}</td>
                   <td><span className="badge badge-accent">{p.eventType}</span></td>
                   <td>{p.date}</td>
@@ -88,7 +98,7 @@ export default function ProposalsList() {
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-2xl)', color: 'var(--text-tertiary)' }}>
+                <td colSpan={8} className="proposals-empty-row">
                   No proposals found
                 </td>
               </tr>
@@ -101,18 +111,18 @@ export default function ProposalsList() {
         {filtered.map(p => {
           const venue = venues.find(v => v.id === p.venueId);
           return (
-            <div key={p.id} className="card animate-fade-in-up" style={{ padding: 'var(--space-md)' }}>
-              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-sm)' }}>
+            <div key={p.id} className="card animate-fade-in-up proposal-card-mobile">
+              <div className="proposal-card-header">
                 <span className={`badge ${getStatusBadge(p.status)}`}>{STATUS_LABELS[p.status]}</span>
-                <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>{p.date}</span>
+                <span className="proposal-date-tag">{p.date}</span>
               </div>
-              <h3 style={{ fontSize: 'var(--font-sm)', fontWeight: 700, marginBottom: '2px' }}>{p.title}</h3>
-              <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', marginBottom: 'var(--space-md)' }}>{p.clubName}</p>
+              <h3 className="proposal-card-title">{p.title}</h3>
+              <p className="proposal-card-club">{p.clubName}</p>
               
-              <div className="flex items-center justify-between" style={{ marginTop: 'var(--space-sm)' }}>
-                <div className="flex items-center gap-sm">
-                  <span className="badge badge-accent" style={{ background: 'var(--bg-surface)' }}>{p.eventType}</span>
-                  <span style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)' }}>{venue?.name || 'No Venue'}</span>
+              <div className="proposal-card-footer">
+                <div className="proposal-footer-left">
+                  <span className="badge badge-accent proposal-type-pill">{p.eventType}</span>
+                  <span className="proposal-venue-tag">{venue?.name || 'No Venue'}</span>
                 </div>
                 <Link to={`/proposals/${p.id}`} className="btn btn-ghost btn-sm">
                   View <ArrowRight size={14} />

@@ -1,0 +1,85 @@
+.interest-graph-card {
+  padding: 1.5rem;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-primary);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.graph-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.graph-visualization {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.radar-container {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.graph-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.insight-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid var(--border-secondary);
+}
+
+.insight-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(var(--primary-rgb), 0.1);
+  color: var(--color-primary);
+  border-radius: 6px;
+}
+
+.insight-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.insight-label {
+  font-size: 0.7rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.insight-value {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.graph-footer {
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-secondary);
+}
+
+.footer-text {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-style: italic;
+}

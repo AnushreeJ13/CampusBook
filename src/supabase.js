@@ -77,18 +77,45 @@ export function onAuthStateChange(callback) {
 // --- PROFILE HELPERS ---
 
 export async function getProfile(uid) {
-  const { data, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('id', uid)
-    .single();
-  if (error && error.code !== 'PGRST116') throw error; // PGRST116 is expected if no profile exists
-  return data;
+  try {
+    // 1. Core select (most common fields)
+    let fetchResult = await supabase
+      .from('user_profiles')
+      .select('id, name, email, role, college, avatar, incomplete')
+      .eq('id', uid)
+      .single();
+
+    if (fetchResult.error) {
+      // 2. Minimalist fallback (just id and role) if core select failed due to cache (406)
+      if (fetchResult.error.status === 406) {
+        console.warn("Retrying with minimalist profile fetch...");
+        fetchResult = await supabase
+          .from('user_profiles')
+          .select('id, role')
+          .eq('id', uid)
+          .single();
+      }
+    }
+
+    if (fetchResult.error) {
+      if (fetchResult.error.status === 406 || fetchResult.error.code === 'PGRST116' || fetchResult.error.code === 'PGRST114') {
+        return null;
+      }
+      throw fetchResult.error;
+    }
+    
+    return fetchResult.data;
+  } catch (err) {
+    if (err?.status !== 406) {
+      console.error("Profile fetch critical failure:", err.code || err.status, err.message);
+    }
+    return null;
+  }
 }
 
 export async function upsertProfile(profile) {
   const { data, error } = await supabase
-    .from('users')
+    .from('user_profiles')
     .upsert(profile)
     .select();
   if (error) throw error;
@@ -131,7 +158,61 @@ export async function getVenues() {
   return data || [];
 }
 
-// Notifications
+export async function saveVenue(venue) {
+  const { id, ...rest } = venue;
+  const { data, error } = await supabase
+    .from('venues')
+    .upsert({ 
+        ...(id ? { id } : {}), 
+        ...rest 
+    })
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+export async function deleteVenue(id) {
+  const { error } = await supabase
+    .from('venues')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
+
+// Attendance
+export async function saveAttendanceSession(session) {
+  const { data, error } = await supabase
+    .from('attendance_sessions')
+    .upsert(session)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+export async function updateAttendanceSession(id, updates) {
+  const { data, error } = await supabase
+    .from('attendance_sessions')
+    .update(updates)
+    .eq('id', id)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+export async function markAttendance(record) {
+  const { data, error } = await supabase
+    .from('attendance')
+    .upsert(record)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+// User Profile Registry
+export async function saveUserProfile(profile) {
+  return await upsertProfile(profile);
+}
+
 export async function getNotifications(userId) {
   const { data, error } = await supabase
     .from('notifications')

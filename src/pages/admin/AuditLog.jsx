@@ -19,15 +19,16 @@ export default function AuditLog() {
 
   // Flatten and filter entries
   const allEntries = useMemo(() => {
-    return proposals.flatMap(p =>
-      p.auditTrail.map((entry, idx) => ({
+    return (proposals || []).flatMap(p => {
+      if (!p) return [];
+      return (p.auditTrail || []).map((entry, idx) => ({
         ...entry,
         proposalTitle: p.title,
         proposalId: p.id,
         // Unique ID for state tracking
         uid: `${p.id}-${entry.at}-${entry.action}-${idx}`
       }))
-    ).sort((a, b) => b.at.localeCompare(a.at));
+    }).sort((a, b) => b.at.localeCompare(a.at));
   }, [proposals]);
 
   const filtered = useMemo(() => {

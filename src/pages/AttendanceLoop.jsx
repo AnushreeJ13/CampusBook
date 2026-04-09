@@ -16,19 +16,26 @@ function drawQR(canvas, data) {
   const modules = 21; // QR version 1
   const cellSize = size / modules;
 
-  ctx.fillStyle = '#ffffff';
+  // Use computed styles of the canvas parent to get theme colors if possible,
+  // otherwise fallback to typical QR contrast.
+  const parentStyle = getComputedStyle(canvas.parentElement || document.body);
+  const qrBg = parentStyle.getPropertyValue('--bg-secondary').trim() || '#ffffff';
+  const qrFg = parentStyle.getPropertyValue('--text-primary').trim() || '#0f172a';
+  const accent = parentStyle.getPropertyValue('--accent').trim() || '#6c63ff';
+
+  ctx.fillStyle = '#ffffff'; // Keep white for scannability
   ctx.fillRect(0, 0, size, size);
 
   // Draw finder patterns (the 3 corner squares)
   function drawFinder(x, y) {
     // Outer
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = qrFg;
     ctx.fillRect(x * cellSize, y * cellSize, 7 * cellSize, 7 * cellSize);
     // White
     ctx.fillStyle = '#ffffff';
     ctx.fillRect((x + 1) * cellSize, (y + 1) * cellSize, 5 * cellSize, 5 * cellSize);
     // Inner
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = qrFg;
     ctx.fillRect((x + 2) * cellSize, (y + 2) * cellSize, 3 * cellSize, 3 * cellSize);
   }
 
@@ -37,7 +44,7 @@ function drawQR(canvas, data) {
   drawFinder(0, modules - 7);
 
   // Draw data modules (pseudo-random based on seed)
-  ctx.fillStyle = '#0f172a';
+  ctx.fillStyle = qrFg;
   let prng = seed;
   for (let row = 0; row < modules; row++) {
     for (let col = 0; col < modules; col++) {
@@ -57,15 +64,15 @@ function drawQR(canvas, data) {
   }
 
   // Add CampusBook branding
-  ctx.fillStyle = '#6c63ff';
+  ctx.fillStyle = accent;
   ctx.font = 'bold 8px Inter, sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('CAMPUSBOOK', size / 2, size - 4);
 }
 
 const TYPE_COLORS = {
-  hackathon: '#6c63ff', workshop: '#2ac9a8', talk: '#3b82f6',
-  cultural: '#e85d9b', sports: '#f59e0b', fest: '#a855f7',
+  hackathon: 'var(--accent-student)', workshop: 'var(--status-success)', talk: 'var(--status-info)',
+  cultural: 'var(--accent-society)', sports: 'var(--status-warning)', fest: 'var(--accent-admin)',
 };
 
 const LOOP_STEPS = [
@@ -77,6 +84,7 @@ const LOOP_STEPS = [
 ];
 
 export default function AttendanceLoop() {
+  const { theme } = useTheme(); // Use theme context if needed
   const [selectedEvent, setSelectedEvent] = useState(SIMULATED_EVENTS[0]);
   const [scanCount, setScanCount] = useState(0);
   const [rating, setRating] = useState(0);
@@ -93,7 +101,7 @@ export default function AttendanceLoop() {
     setSelectedTags([]);
     setFeedbackSubmitted(false);
     setActiveStep(0);
-  }, [selectedEvent]);
+  }, [selectedEvent, theme]); // Redraw on theme change
 
   // Cycle through loop steps
   useEffect(() => {
@@ -116,7 +124,7 @@ export default function AttendanceLoop() {
   };
 
   const attendancePercentage = selectedEvent ? Math.round((scanCount / selectedEvent.expectedAttendees) * 100) : 0;
-  const circleColor = attendancePercentage > 80 ? '#22c55e' : attendancePercentage > 50 ? '#f59e0b' : '#ef4444';
+  const circleColor = attendancePercentage > 80 ? 'var(--status-success)' : attendancePercentage > 50 ? 'var(--status-warning)' : 'var(--status-error)';
 
   return (
     <div className="att-container">

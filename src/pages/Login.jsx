@@ -5,7 +5,7 @@ import { ROLES, ROLE_LABELS } from '../utils/constants';
 import { Sparkles, Mail, Lock, User, GraduationCap, Users, BookOpen, Shield, Phone, LogIn } from 'lucide-react';
 import './Login.css';
 
-export default function Login() {
+export default function Login({ mode: initialMode = 'login' }) {
   const { 
     user, 
     loginWithEmail, 
@@ -16,7 +16,7 @@ export default function Login() {
     loginWithPhone 
   } = useAuth();
 
-  const [mode, setMode] = useState('login'); // 'login', 'register', 'google-setup', 'phone'
+  const [mode, setMode] = useState(initialMode); // 'login', 'register', 'google-setup', 'phone'
   const [method, setMethod] = useState('email'); // 'email', 'google', 'phone'
   
   // Form States
@@ -37,10 +37,10 @@ export default function Login() {
   useEffect(() => {
     if (user && !user.incomplete) {
       navigate('/dashboard');
-    } else if (user?.incomplete) {
+    } else if (user?.incomplete && mode !== 'login' && mode !== 'register') {
       setMode('google-setup');
     }
-  }, [user, navigate]);
+  }, [user, navigate, mode]);
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
@@ -131,27 +131,27 @@ export default function Login() {
       <div className="login-container">
         <div className="login-header">
           <div className="login-logo"><Sparkles size={32} /></div>
-          <h1 className="login-title">CampusBook</h1>
-          <p className="login-subtitle">Secure University Gateway</p>
+          <h1 className="login-title">UniFlow</h1>
+          <p className="login-subtitle">Forensic Intelligence Gateway</p>
         </div>
 
         {error && <div className="login-error-alert">{error}</div>}
 
         {mode === 'google-setup' ? (
           <form className="login-form animate-fade-in" onSubmit={handleSetupComplete}>
-            <h2 className="form-title">Complete Your Profile</h2>
-            <p className="form-desc">Almost there! We just need your college and role.</p>
+            <h2 className="form-title">Complete Your Intelligence Profile</h2>
+            <p className="form-desc">Sync your forensic signature with your institution.</p>
             
             <div className="input-group">
               <label>Full Name</label>
               <div className="input-wrapper">
                 <User size={18} />
-                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Full Name" required />
+                <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Forensic Identity" required />
               </div>
             </div>
 
             <div className="input-group">
-              <label>College / University (Compulsory)</label>
+              <label>Institution / College (Compulsory)</label>
               <div className="input-wrapper">
                 <BookOpen size={18} />
                 <input type="text" value={college} onChange={e => setCollege(e.target.value)} placeholder="University Name" required />
@@ -159,17 +159,21 @@ export default function Login() {
             </div>
 
             <div className="input-group">
-              <label>Select Role</label>
+              <label>Intelligence Access Role</label>
               <select className="role-select" value={role} onChange={e => setRole(e.target.value)}>
-                <option value={ROLES.STUDENT}>Student</option>
-                <option value={ROLES.SOCIETY}>Society Member</option>
+                <option value={ROLES.STUDENT}>Student Intelligence</option>
+                <option value={ROLES.SOCIETY}>Society Hub</option>
                 <option value={ROLES.FACULTY}>Faculty Advisor</option>
-                <option value={ROLES.ADMIN}>Admin</option>
+                <option value={ROLES.ADMIN}>System Admin</option>
               </select>
             </div>
 
             <button type="submit" className="login-btn active" disabled={loading}>
-              {loading ? 'Finalizing...' : 'Start Using CampusBook'}
+              {loading ? 'Synchronizing...' : 'Initialize UniFlow Portal'}
+            </button>
+
+            <button type="button" className="login-btn" style={{ marginTop: '1rem', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)' }} onClick={() => logout()}>
+              Log Out / Use Different Account
             </button>
           </form>
         ) : (

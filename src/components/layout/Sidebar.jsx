@@ -5,48 +5,44 @@ import { ROLES } from '../../utils/constants';
 import {
   LayoutDashboard, MapPin, FileText, PlusCircle, ClipboardCheck,
   Bell, BarChart3, Users, ScrollText, Settings, LogOut, Eye,
-  Building2, ChevronLeft, ChevronRight, RefreshCw, Sparkles, X,
+  Building2, ChevronLeft, ChevronRight, RefreshCw, X,
   Map, Calendar, Shield, QrCode, MessageCircle
 } from 'lucide-react';
 import { useState } from 'react';
+import UniflowLogo from '../UniflowLogo';
 import './Sidebar.css';
 
 const MENU_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/events', icon: Eye, label: 'Upcoming Events' },
-    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
-    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/attendance', icon: QrCode, label: 'Attendance Scanner' },
-    { to: '/proposals/new', icon: PlusCircle, label: 'New event Proposal' },
+    { to: '/proposals/new', icon: PlusCircle, label: 'New Proposal' },
     { to: '/proposals', icon: FileText, label: 'My Proposals' },
-    { to: '/venues', icon: MapPin, label: 'Venue Intelligence' },
-    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
+    { to: '/venues', icon: MapPin, label: 'Venues' },
   ],
   [ROLES.FACULTY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
-    { to: '/timetable', icon: Calendar, label: 'Timetable AI' },
     { to: '/reviews', icon: ClipboardCheck, label: 'Pending Reviews' },
     { to: '/proposals', icon: FileText, label: 'All Proposals' },
-    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/reviews', icon: ClipboardCheck, label: 'Pending Approvals' },
+    { to: '/reviews', icon: ClipboardCheck, label: 'Approvals' },
     { to: '/proposals', icon: FileText, label: 'All Proposals' },
-    { to: '/venues/manage', icon: Building2, label: 'Manage Venues' },
-    { to: '/graph-insights', icon: Shield, label: 'Graph Insights' },
+    { to: '/venues/manage', icon: Building2, label: 'Venue Management' },
+    { to: '/graph-insights', icon: Shield, label: 'Campus Insights' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
-    { to: '/audit', icon: ScrollText, label: 'Audit Log' },
+    { to: '/audit', icon: ScrollText, label: 'Audit Trail' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
 };
+
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
   const { user, logout, switchRole, selectedCollege, selectCollege } = useAuth();
@@ -77,19 +73,13 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         {/* Logo */}
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
-            {selectedCollege?.logo || <Sparkles size={22} />}
+            <UniflowLogo size={28} />
           </div>
           {!collapsed && (
             <div className="sidebar-logo-text">
-              <span className="sidebar-brand">{selectedCollege?.name || 'CampusBook'}</span>
-              <span className="sidebar-tagline">{selectedCollege?.shortName || 'Intelligence Platform'}</span>
-              <button 
-                onClick={() => selectCollege(null)}
-                className="sidebar-switch-college"
-              >
-                <RefreshCw size={10} /> Switch College
-              </button>
-              <span className="sidebar-role-tag">{user.role}</span>
+              <span className="sidebar-brand">UniFlow</span>
+              <span className="sidebar-tagline">{selectedCollege?.shortName || 'Smart Campus'}</span>
+              <span className="sidebar-role-tag">{user?.role}</span>
             </div>
           )}
         </div>
@@ -110,6 +100,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           <NavLink
             key={item.to}
             to={item.to}
+            end={true}
             className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
             onClick={() => mobileOpen && setMobileOpen(false)}
           >
@@ -121,36 +112,6 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
       {/* Bottom Section */}
       <div className="sidebar-bottom">
-        {/* Demo Role Switcher */}
-        {!collapsed && (
-          <div className="sidebar-demo-section">
-            <button
-              className="sidebar-link demo-switcher-btn"
-              onClick={() => setShowRoleSwitcher(!showRoleSwitcher)}
-            >
-              <RefreshCw size={18} />
-              <span>Switch Role (Demo)</span>
-            </button>
-            {showRoleSwitcher && (
-              <div className="role-switcher-dropdown">
-                {Object.values(ROLES).map(role => (
-                  <button
-                    key={role}
-                    className={`role-option ${user.role === role ? 'active' : ''}`}
-                    onClick={() => handleRoleSwitch(role)}
-                  >
-                    <span className={`role-dot role-dot-${role}`} />
-                    {role.charAt(0).toUpperCase() + role.slice(1)}
-                  </button>
-                ))}
-                <button className="role-option reset-option" onClick={resetData}>
-                  <RefreshCw size={14} /> Reset Data
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-
         {/* User Info */}
         <Link to="/profile" className="sidebar-user" style={{textDecoration: 'none'}}>
           <div className="sidebar-user-avatar">{user.avatar}</div>
@@ -167,6 +128,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           )}
         </Link>
       </div>
+
     </aside>
     </>
   );
