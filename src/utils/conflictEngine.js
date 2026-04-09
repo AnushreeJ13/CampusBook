@@ -1,5 +1,4 @@
-import { db } from '../firebase';
-import { collection, query, where, getDocs, getDoc, doc } from 'firebase/firestore';
+// Helper for conflict detection
 
 /**
  * Hard conflict detection for venue bookings.

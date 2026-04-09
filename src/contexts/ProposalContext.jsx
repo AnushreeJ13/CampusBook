@@ -16,7 +16,7 @@ import { MOCK_USERS } from '../utils/mockData';
 const ProposalContext = createContext(null);
 
 export function ProposalProvider({ children }) {
-  const { user } = useAuth();
+  const { user, selectedCollege } = useAuth();
   const [proposals, setProposals] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -24,22 +24,27 @@ export function ProposalProvider({ children }) {
 
   // -- REAL-TIME SUBSCRIPTIONS --
   useEffect(() => {
-    if (!user) {
+    if (!user || !selectedCollege) {
       setLoading(false);
       return;
     }
 
+    const collegeId = selectedCollege.id;
+
     const unsubProposals = subscribeToCollection('proposals', (data) => {
         let localDrafts = [];
         try {
-            const saved = localStorage.getItem('campusbook_drafts');
+            const saved = localStorage.getItem(`campusos_drafts_${collegeId}`);
             if (saved) localDrafts = JSON.parse(saved);
         } catch(e) {}
 
-        const combined = [...data];
+        // Filter by college_id
+        let combined = data.filter(p => p.collegeId === collegeId);
         
         MOCK_PROPOSALS.forEach(mock => {
-           if (!combined.find(d => d.id === mock.id)) combined.push(mock);
+           if (mock.collegeId === collegeId && !combined.find(d => d.id === mock.id)) {
+             combined.push(mock);
+           }
         });
 
         localDrafts.forEach(draft => {
@@ -52,7 +57,9 @@ export function ProposalProvider({ children }) {
     const unsubNotifs = subscribeToCollection('notifications', (data) => {
         const combined = [...data];
         MOCK_NOTIFICATIONS.forEach(mock => {
-           if (!data.find(d => d.id === mock.id)) combined.push(mock);
+           if (mock.collegeId === collegeId && !data.find(d => d.id === mock.id)) {
+             combined.push(mock);
+           }
         });
         setNotifications(combined.filter(n => n.userId === user.uid || n.userId === user.id));
     });
@@ -60,7 +67,9 @@ export function ProposalProvider({ children }) {
     const unsubBookings = subscribeToCollection('bookings', (data) => {
         const combined = [...data];
         MOCK_BOOKINGS.forEach(mock => {
-           if (!data.find(d => d.id === mock.id)) combined.push(mock);
+           if (mock.collegeId === collegeId && !data.find(d => d.id === mock.id)) {
+             combined.push(mock);
+           }
         });
         setBookings(combined);
         setLoading(false);
@@ -71,7 +80,7 @@ export function ProposalProvider({ children }) {
         unsubNotifs();
         unsubBookings();
     };
-  }, [user]);
+  }, [user, selectedCollege]);
 
   // -- ACTIONS --
 
@@ -79,16 +88,18 @@ export function ProposalProvider({ children }) {
     const newNotif = { 
         ...notification, 
         id: `n${Date.now()}`, 
+        collegeId: selectedCollege?.id,
         read: false, 
         createdAt: new Date().toISOString() 
     };
     await saveNotification(newNotif);
-  }, []);
+  }, [selectedCollege]);
 
   const submitProposal = useCallback(async (proposal) => {
     const newProposal = {
       ...proposal,
       id: `p${Date.now()}`,
+      collegeId: selectedCollege?.id,
       status: PROPOSAL_STATUS.SUBMITTED,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -105,12 +116,13 @@ export function ProposalProvider({ children }) {
       ],
     };
     
-    // Save to local drafts to survive UI refreshes natively regardless of Firebase rules
+    // Save to local drafts
     try {
-        const saved = localStorage.getItem('campusbook_drafts');
+        const collegeId = selectedCollege?.id;
+        const saved = localStorage.getItem(`campusos_drafts_${collegeId}`);
         const localDrafts = saved ? JSON.parse(saved) : [];
         localDrafts.unshift(newProposal);
-        localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
+        localStorage.setItem(`campusos_drafts_${collegeId}`, JSON.stringify(localDrafts));
     } catch(e) {}
 
     // Optimistically update

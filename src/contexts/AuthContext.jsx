@@ -1,18 +1,14 @@
 import { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { 
-  auth, 
-  db, 
-  googleProvider, 
-  isConfigured,
-  onAuthStateChanged,
-  signInWithPopup,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
+  signInWithEmail,
+  signUpWithEmail,
+  signInWithGoogle,
   signOut,
-  signInWithPhoneNumber,
-  RecaptchaVerifier
-} from '../firebase';
-import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
+  onAuthStateChange,
+  getProfile,
+  upsertProfile,
+  supabase
+} from '../supabase';
 import { ROLES } from '../utils/constants';
 
 const AuthContext = createContext(null);
@@ -21,44 +17,59 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [university, setUniversity] = useState('CampusBook University');
+  const [selectedCollege, setSelectedCollege] = useState(() => {
+    try {
+      const saved = localStorage.getItem('campusos_college');
+      return saved ? JSON.parse(saved) : null;
+    } catch(e) { return null; }
+  });
+
+  const selectCollege = (college) => {
+    setSelectedCollege(college);
+    localStorage.setItem('campusos_college', JSON.stringify(college));
+    if (college) setUniversity(college.name);
+  };
 
   // Sync Auth State
   useEffect(() => {
-    if (!isConfigured || !auth) {
-      setLoading(false);
-      return;
-    }
+    const unsubscribe = onAuthStateChange(async (supabaseUser) => {
+      if (supabaseUser) {
+        try {
+          // Fetch additional profile data from Supabase 'users' table
+          const profileData = await getProfile(supabaseUser.id);
 
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        // Fetch additional profile data from Firestore
-        const userDocRef = doc(db, "users", firebaseUser.uid);
-        const userDoc = await getDoc(userDocRef);
-
-        if (userDoc.exists()) {
-          const profileData = userDoc.data();
-          setUser({
-            uid: firebaseUser.uid,
-            id: firebaseUser.uid,
-            email: firebaseUser.email,
-            phoneNumber: firebaseUser.phoneNumber,
-            displayName: profileData.name || firebaseUser.displayName,
-            avatar: profileData.avatar || (firebaseUser.displayName ? firebaseUser.displayName[0] : '👤'),
-            ...profileData
-          });
-          if (profileData.college) {
-            setUniversity(profileData.college);
+          if (profileData) {
+            setUser({
+              id: supabaseUser.id,
+              uid: supabaseUser.id,
+              email: supabaseUser.email,
+              phoneNumber: supabaseUser.phone,
+              displayName: profileData.name || supabaseUser.user_metadata?.full_name,
+              avatar: profileData.avatar || (profileData.name ? profileData.name[0] : '👤'),
+              ...profileData
+            });
+            if (profileData.college) {
+              setUniversity(profileData.college);
+            }
+          } else {
+            // User exists in Auth but not in 'users' table yet
+            setUser({
+              id: supabaseUser.id,
+              uid: supabaseUser.id,
+              email: supabaseUser.email,
+              phoneNumber: supabaseUser.phone,
+              displayName: supabaseUser.user_metadata?.full_name,
+              avatar: supabaseUser.user_metadata?.full_name ? supabaseUser.user_metadata.full_name[0] : '👤',
+              incomplete: true
+            });
           }
-        } else {
-          // User exists in Auth but not Firestore (e.g., first time Google login)
+        } catch (err) {
+          console.error("Profile fetch failed:", err);
           setUser({
-            uid: firebaseUser.uid,
-            id: firebaseUser.uid,
-            email: firebaseUser.email,
-            phoneNumber: firebaseUser.phoneNumber,
-            displayName: firebaseUser.displayName,
-            avatar: firebaseUser.displayName ? firebaseUser.displayName[0] : '👤',
-            incomplete: true // Flag to prompt for Role/College
+            id: supabaseUser.id,
+            uid: supabaseUser.id,
+            email: supabaseUser.email,
+            incomplete: true
           });
         }
       } else {
@@ -67,61 +78,81 @@ export function AuthProvider({ children }) {
       setLoading(false);
     });
 
-    return unsubscribe;
+    return () => {
+      if (typeof unsubscribe === 'function') unsubscribe();
+    };
   }, []);
 
   // -- AUTH ACTIONS --
 
   const register = async (email, password, name, college, role) => {
-    if (!isConfigured || !auth) throw new Error("Firebase not configured. Please add your credentials to firebase.js");
-    const res = await createUserWithEmailAndPassword(auth, email, password);
-    const userDocRef = doc(db, "users", res.user.uid);
-    const profile = { name, college, role, createdAt: new Date().toISOString() };
-    await setDoc(userDocRef, profile);
-    return res.user;
+    const data = await signUpWithEmail(email, password, { name, college, role });
+    if (data.user) {
+        const profile = { 
+            id: data.user.id, 
+            email: data.user.email,
+            name, 
+            college, 
+            role, 
+            created_at: new Date().toISOString(),
+            incomplete: false 
+        };
+        await upsertProfile(profile);
+    }
+    return data.user;
   };
 
   const loginWithEmail = async (email, password) => {
-    if (!isConfigured || !auth) throw new Error("Firebase not configured. Please add your credentials to firebase.js");
-    return await signInWithEmailAndPassword(auth, email, password);
+    return await signInWithEmail(email, password);
   };
 
   const loginWithGoogle = async () => {
-    if (!isConfigured || !auth) throw new Error("Firebase not configured. Please add your credentials to firebase.js");
-    const res = await signInWithPopup(auth, googleProvider);
-    // Profile check happens in useEffect, but we can return the result
-    return res.user;
+    return await signInWithGoogle();
   };
 
   const logout = async () => {
-    if (!isConfigured || !auth) return;
-    await signOut(auth);
+    await signOut();
     setUser(null);
   };
 
   const completeProfile = async (uid, data) => {
-    if (!isConfigured || !db) throw new Error("Firebase not configured.");
-    const userDocRef = doc(db, "users", uid);
-    await setDoc(userDocRef, { ...data, createdAt: new Date().toISOString() }, { merge: true });
+    const profile = { 
+        id: uid, 
+        ...data, 
+        updated_at: new Date().toISOString(),
+        incomplete: false 
+    };
+    await upsertProfile(profile);
     // Update local state
     setUser(prev => ({ ...prev, ...data, incomplete: false }));
     if (data.college) setUniversity(data.college);
   };
 
-  // Phone Auth Helpers
+  // Phone Auth Helpers (Supabase Otp)
   const setupRecaptcha = (containerId) => {
-    if (!isConfigured || !auth) throw new Error("Firebase not configured.");
-    return new RecaptchaVerifier(auth, containerId, {
-      size: 'invisible',
-      callback: (response) => {
-        // reCAPTCHA solved
-      }
-    });
+    // Supabase handles captcha internally or via provider settings, 
+    // no direct equivalent to Firebase RecaptchaVerifier needed in code usually.
+    return null; 
   };
 
-  const loginWithPhone = async (phoneNumber, appVerifier) => {
-    if (!isConfigured || !auth) throw new Error("Firebase not configured.");
-    return await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
+  const loginWithPhone = async (phoneNumber) => {
+    const { error } = await supabase.auth.signInWithOtp({
+        phone: phoneNumber
+    });
+    if (error) throw error;
+    
+    // Return a mock confirmationResult for Firebase compatibility in Login.jsx
+    return {
+      confirm: async (otp) => {
+        const { data, error: verifyError } = await supabase.auth.verifyOtp({
+          phone: phoneNumber,
+          token: otp,
+          type: 'sms'
+        });
+        if (verifyError) throw verifyError;
+        return data;
+      }
+    };
   };
 
   return (
@@ -129,6 +160,8 @@ export function AuthProvider({ children }) {
       user, 
       loading, 
       university, 
+      selectedCollege,
+      selectCollege,
       register, 
       loginWithEmail, 
       loginWithGoogle, 

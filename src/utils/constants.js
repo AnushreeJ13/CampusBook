@@ -82,3 +82,10 @@ export const NOTIFICATION_TYPES = {
   SUBMISSION: 'submission',
   COMMENT: 'comment',
 };
+
+export const COLLEGES = [
+  { id: 'iit_delhi', name: 'IIT Delhi', shortName: 'IITD', logo: '🏛️', theme: '#ebf4ff' },
+  { id: 'iit_bombay', name: 'IIT Bombay', shortName: 'IITB', logo: '🏢', theme: '#f0fff4' },
+  { id: 'bits_pilani', name: 'BITS Pilani', shortName: 'BITS', logo: '🏫', theme: '#fffaf0' },
+  { id: 'dtu', name: 'Delhi Technological University', shortName: 'DTU', logo: '🎓', theme: '#fff5f5' },
+];

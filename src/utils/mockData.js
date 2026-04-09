@@ -1,14 +1,14 @@
 import { PROPOSAL_STATUS, ROLES } from './constants';
 
 export const MOCK_USERS = [
-  { id: 'u1', name: 'Anushree Jain', email: 'anushree@university.edu', role: ROLES.STUDENT, avatar: '👩‍🎓' },
-  { id: 'u2', name: 'Riya Sharma', email: 'riya@university.edu', role: ROLES.SOCIETY, clubId: 'c1', clubName: 'Tech Society', avatar: '👩‍💻' },
-  { id: 'u4', name: 'Vijay', email: 'vijay@gmail.com', role: ROLES.FACULTY, assignedClubs: ['c1'], avatar: '👨‍🏫' },
-  { id: 'u6', name: 'Vikram Singh', email: 'vikram@university.edu', role: ROLES.ADMIN, avatar: '🛡️' }
+  { id: 'u1', name: 'Anushree Jain', email: 'anushree@university.edu', role: ROLES.STUDENT, avatar: '👩‍🎓', collegeId: 'iit_delhi' },
+  { id: 'u2', name: 'Riya Sharma', email: 'riya@university.edu', role: ROLES.SOCIETY, clubId: 'c1', clubName: 'Tech Society', avatar: '👩‍💻', collegeId: 'iit_delhi' },
+  { id: 'u4', name: 'Vijay', email: 'vijay@gmail.com', role: ROLES.FACULTY, assignedClubs: ['c1'], avatar: '👨‍🏫', collegeId: 'iit_delhi' },
+  { id: 'u6', name: 'Vikram Singh', email: 'vikram@university.edu', role: ROLES.ADMIN, avatar: '🛡️', collegeId: 'iit_delhi' }
 ];
 
 export const MOCK_CLUBS = [
-  { id: 'c1', name: 'Tech Society', description: 'Technology and innovation events', facultyAdvisorId: 'u4', leaderId: 'u2', memberCount: 85 }
+  { id: 'c1', name: 'Tech Society', description: 'Technology and innovation events', facultyAdvisorId: 'u4', leaderId: 'u2', memberCount: 85, collegeId: 'iit_delhi' }
 ];
 
 export const MOCK_VENUES = [
@@ -22,6 +22,7 @@ export const MOCK_VENUES = [
     image: '🎭',
     allowedEventTypes: ['fest', 'talk', 'cultural'],
     blockedDates: ['2026-04-01'],
+    collegeId: 'iit_delhi',
   },
   {
     id: 'v2',
@@ -33,6 +34,7 @@ export const MOCK_VENUES = [
     image: '🎓',
     allowedEventTypes: ['workshop', 'talk', 'hackathon'],
     blockedDates: [],
+    collegeId: 'iit_delhi',
   }
 ];
 
@@ -59,10 +61,12 @@ export const MOCK_PROPOSALS = [
     submittedByName: 'Riya Sharma',
     resources: 'Projector, Wi-Fi access',
     documents: [],
-    status: PROPOSAL_STATUS.FACULTY_REVIEW,
-    currentReviewer: 'u4',
+    status: PROPOSAL_STATUS.APPROVED,
+    currentReviewer: null,
+    collegeId: 'iit_delhi',
     createdAt: formatDate(-3),
     updatedAt: formatDate(-1),
+    bundle: { attendanceBoost: 22, reviewerConfidence: 94 },
     auditTrail: [
       { action: 'created', by: 'u2', byName: 'Riya Sharma', at: formatDate(-3), note: 'Proposal created' }
     ],
@@ -84,8 +88,10 @@ export const MOCK_PROPOSALS = [
     documents: [],
     status: PROPOSAL_STATUS.APPROVED,
     currentReviewer: null,
+    collegeId: 'iit_delhi',
     createdAt: formatDate(-14),
     updatedAt: formatDate(-5),
+    bundle: { attendanceBoost: 15, reviewerConfidence: 88 },
     auditTrail: [
       { action: 'created', by: 'u2', byName: 'Riya Sharma', at: formatDate(-14), note: 'Draft created' }
     ],
@@ -93,9 +99,9 @@ export const MOCK_PROPOSALS = [
 ];
 
 export const MOCK_BOOKINGS = [
-  { id: 'b1', venueId: 'v2', proposalId: 'p2', date: formatDate(25), timeSlot: 'evening_1', status: 'confirmed' }
+  { id: 'b1', venueId: 'v2', proposalId: 'p2', date: formatDate(25), timeSlot: 'evening_1', status: 'confirmed', collegeId: 'iit_delhi' }
 ];
 
 export const MOCK_NOTIFICATIONS = [
-  { id: 'n1', userId: 'u2', type: 'revision', title: 'Revision Requested', message: 'Please update your pitch deck', proposalId: 'p2', read: false, createdAt: formatDate(-4) },
+  { id: 'n1', userId: 'u2', type: 'revision', title: 'Revision Requested', message: 'Please update your pitch deck', proposalId: 'p2', read: false, createdAt: formatDate(-4), collegeId: 'iit_delhi' },
 ];

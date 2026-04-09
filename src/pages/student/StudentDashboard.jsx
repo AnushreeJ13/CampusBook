@@ -123,11 +123,41 @@ export default function StudentDashboard() {
           <h2>Latest Events</h2>
           <Link to="/events" className="btn btn-ghost btn-sm text-accent-student">View All <ArrowRight size={16}/></Link>
         </div>
-        <div className="student-events-grid">
-          {upcomingEvents.slice(0, 6).map((event, i) => {
+        
+        {/* Header Stats */}
+        <div className="grid grid-cols-2 gap-4 mb-8">
+          <Link to="/events" className="bg-indigo-600 rounded-[2rem] p-6 text-white group hover:scale-[1.02] transition-transform">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-3xl">🗓️</span>
+              <div className="bg-white/20 p-2 rounded-xl group-hover:rotate-12 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+              </div>
+            </div>
+            <div className="text-2xl font-black">{upcomingEvents.length}</div>
+            <div className="text-indigo-100 text-sm font-bold opacity-80 uppercase tracking-wider">Live Events</div>
+          </Link>
+          <Link to="/venues" className="bg-slate-800 rounded-[2rem] p-6 text-white group hover:scale-[1.02] transition-transform">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-3xl">🏛️</span>
+              <div className="bg-white/10 p-2 rounded-xl group-hover:-rotate-12 transition-transform">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+              </div>
+            </div>
+            <div className="text-2xl font-black">{venues.length}+</div>
+            <div className="text-slate-400 text-sm font-bold opacity-80 uppercase tracking-wider">Venues</div>
+          </Link>
+        </div>
+
+        {/* Event Cards Mapping */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {upcomingEvents.slice(0, 6).map((event) => {
             const venue = venues.find(v => v.id === event.venueId);
             return (
-              <Link to={`/events/${event.id}`} key={event.id} className="student-event-card animate-card-entrance" style={{ animationDelay: `${i * 0.1}s` }}>
+              <Link 
+                key={event.id} 
+                to={`/events/${event.id}`}
+                className="group bg-white border border-slate-200 rounded-[2rem] p-6 hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-500"
+              >
                 <div className="flex justify-between items-start mb-4">
                   <div className="student-event-icon-box">
                     <Calendar size={20} className="text-accent-student" />

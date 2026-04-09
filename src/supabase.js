@@ -1,16 +1,20 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Initialize Supabase client
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project.supabase.co';
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Singleton instance to prevent "Multiple GoTrueClient" warning
+export const supabase = globalThis.__supabase || createClient(supabaseUrl, supabaseAnonKey);
+if (typeof window !== 'undefined') globalThis.__supabase = supabase;
 
 /**
  * Supabase helper functions for CampusBook
  * These mirror the Firebase API layer for easy migration
  */
 
-// Auth helpers
+// --- AUTH HELPERS ---
+
 export async function signInWithEmail(email, password) {
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) throw error;
@@ -27,18 +31,73 @@ export async function signUpWithEmail(email, password, metadata = {}) {
   return data;
 }
 
+export async function signInWithGoogle() {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: window.location.origin
+    }
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
   if (error) throw error;
 }
 
-export function onAuthStateChange(callback) {
-  return supabase.auth.onAuthStateChange((_event, session) => {
-    callback(session?.user || null);
+export async function signInWithPhone(phone) {
+  const { data, error } = await supabase.auth.signInWithOtp({
+    phone: phone,
   });
+  if (error) throw error;
+  return data;
 }
 
-// Database helpers - Proposals
+export async function verifyPhoneOtp(phone, token) {
+  const { data, error } = await supabase.auth.verifyOtp({
+    phone: phone,
+    token: token,
+    type: 'sms',
+  });
+  if (error) throw error;
+  return data;
+}
+
+export function onAuthStateChange(callback) {
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    callback(session?.user || null);
+  });
+  return () => {
+    subscription.unsubscribe();
+  };
+}
+
+// --- PROFILE HELPERS ---
+
+export async function getProfile(uid) {
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('id', uid)
+    .single();
+  if (error && error.code !== 'PGRST116') throw error; // PGRST116 is expected if no profile exists
+  return data;
+}
+
+export async function upsertProfile(profile) {
+  const { data, error } = await supabase
+    .from('users')
+    .upsert(profile)
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+// --- DATABASE HELPERS ---
+
+// Proposals
 export async function getProposals() {
   const { data, error } = await supabase
     .from('proposals')
@@ -48,26 +107,21 @@ export async function getProposals() {
   return data || [];
 }
 
-export async function addProposal(proposal) {
+export async function saveProposal(proposal) {
+  const { id, ...rest } = proposal;
   const { data, error } = await supabase
     .from('proposals')
-    .insert([{ ...proposal, created_at: new Date().toISOString() }])
+    .upsert({ 
+        ...(id ? { id } : {}), 
+        ...rest, 
+        updated_at: new Date().toISOString() 
+    })
     .select();
   if (error) throw error;
   return data?.[0];
 }
 
-export async function updateProposal(id, updates) {
-  const { data, error } = await supabase
-    .from('proposals')
-    .update({ ...updates, updated_at: new Date().toISOString() })
-    .eq('id', id)
-    .select();
-  if (error) throw error;
-  return data?.[0];
-}
-
-// Database helpers - Venues
+// Venues
 export async function getVenues() {
   const { data, error } = await supabase
     .from('venues')
@@ -77,7 +131,91 @@ export async function getVenues() {
   return data || [];
 }
 
-// Database helpers - Chat Messages
+// Notifications
+export async function getNotifications(userId) {
+  const { data, error } = await supabase
+    .from('notifications')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveNotification(notification) {
+    const { id, ...rest } = notification;
+    const { data, error } = await supabase
+      .from('notifications')
+      .upsert({ 
+          ...(id ? { id } : {}), 
+          ...rest 
+      })
+      .select();
+    if (error) throw error;
+    return data?.[0];
+}
+
+export async function markNotifRead(notifId) {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notifId);
+    if (error) throw error;
+}
+
+// Bookings
+export async function getBookings() {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveBooking(booking) {
+  const { id, ...rest } = booking;
+  const { data, error } = await supabase
+    .from('bookings')
+    .upsert({ 
+        ...(id ? { id } : {}), 
+        ...rest 
+    })
+    .select();
+  if (error) throw error;
+  return data?.[0];
+}
+
+// Booking History
+export async function saveBookingHistory(historyEntry) {
+    const { venueId, eventType, status } = historyEntry;
+    
+    // In Supabase, we can use an 'upsert' with an incrementing logic if we had a function,
+    // but for simple migration we'll replicate the Firebase 'fetch then update' logic here.
+    const { data: existing } = await supabase
+        .from('booking_history')
+        .select('*')
+        .eq('venue_id', venueId)
+        .eq('event_type', eventType)
+        .single();
+    
+    let stats = existing || { total: 0, approvals: 0, approval_rate: 0.5 };
+    stats.total += 1;
+    if (status === 'approved') stats.approvals += 1;
+    stats.approval_rate = stats.approvals / stats.total;
+    
+    const { error } = await supabase
+        .from('booking_history')
+        .upsert({
+            venue_id: venueId,
+            event_type: eventType,
+            ...stats,
+            last_updated: new Date().toISOString()
+        });
+    if (error) throw error;
+}
+
+// Chat
 export async function getChatMessages(channel = 'general', limit = 50) {
   const { data, error } = await supabase
     .from('chat_messages')
@@ -98,47 +236,31 @@ export async function sendChatMessage(message) {
   return data?.[0];
 }
 
-// Real-time subscription for chat
-export function subscribeToChatMessages(channel, callback) {
-  return supabase
-    .channel(`chat:${channel}`)
+// --- SUBSCRIPTIONS ---
+
+export function subscribeToTable(table, callback, filter = null) {
+  let channelName = `public:${table}`;
+  if (filter) {
+      channelName += `:${filter.column}=${filter.value}`;
+  }
+  
+  const channel = supabase
+    .channel(channelName)
     .on('postgres_changes', {
-      event: 'INSERT',
+      event: '*',
       schema: 'public',
-      table: 'chat_messages',
-      filter: `channel=eq.${channel}`
+      table: table,
+      ...(filter ? { filter: `${filter.column}=eq.${filter.value}` } : {})
     }, (payload) => {
-      callback(payload.new);
+      // Callback with the whole state is usually better for app usage
+      // but to match onSnapshot we might need more logic in the caller.
+      // For now, let's just trigger the callback.
+      callback(payload);
     })
     .subscribe();
+    
+  return () => {
+    supabase.removeChannel(channel);
+  };
 }
 
-// Notifications
-export async function getNotifications(userId) {
-  const { data, error } = await supabase
-    .from('notifications')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-
-// Bookings
-export async function getBookings() {
-  const { data, error } = await supabase
-    .from('bookings')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
-}
-
-export async function addBooking(booking) {
-  const { data, error } = await supabase
-    .from('bookings')
-    .insert([{ ...booking, created_at: new Date().toISOString() }])
-    .select();
-  if (error) throw error;
-  return data?.[0];
-}

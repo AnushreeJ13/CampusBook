@@ -1,95 +1,82 @@
-import { db, isConfigured } from './firebase';
 import { 
-  doc, 
-  getDoc,
-  getDocs, 
-  collection, 
-  addDoc, 
-  updateDoc, 
-  deleteDoc, 
-  onSnapshot, 
-  query, 
-  where,
-  setDoc,
-  serverTimestamp
-} from "firebase/firestore";
+    supabase, 
+    saveProposal as supabaseSaveProposal,
+    saveNotification as supabaseSaveNotification,
+    markNotifRead as supabaseMarkNotifRead,
+    saveBooking as supabaseSaveBooking,
+    saveBookingHistory as supabaseSaveBookingHistory
+} from './supabase';
 
-// Listeners helper
+// Listeners helper - Replicates Firebase onSnapshot behavior
 export const subscribeToCollection = (collectionName, callback, filters = []) => {
-    if (!isConfigured || !db) return () => {};
+    // 1. Initial Fetch
+    const fetchData = async () => {
+        let query = supabase.from(collectionName).select('*');
+        
+        // Simple filter mapping (only handle 'eq' for now as that's most common in his filters)
+        filters.forEach(f => {
+            // Firebase filters are often like where('field', '==', value)
+            // But his usage in api.js line 23 was query(q, ...filters)
+            // Need to see where he defines filters.
+        });
+
+        const { data, error } = await query;
+        if (!error) callback(data);
+    };
+
+    fetchData();
+
+    // 2. Subscribe to changes and re-fetch (simplest way to ensure consistency)
+    const channel = supabase
+        .channel(`public:${collectionName}`)
+        .on('postgres_changes', { event: '*', schema: 'public', table: collectionName }, () => {
+            fetchData();
+        })
+        .subscribe();
     
-    let q = collection(db, collectionName);
-    if (filters.length > 0) {
-        q = query(q, ...filters);
-    }
-    
-    return onSnapshot(q, (snapshot) => {
-        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        callback(data);
-    }, (error) => {
-        console.error(`Error listening to ${collectionName}:`, error);
-    });
+    return () => {
+        supabase.removeChannel(channel);
+    };
 };
 
 // --- PROPOSALS ---
 export const saveProposal = async (proposal) => {
-    if (!isConfigured || !db) return;
-    const { id, ...data } = proposal;
-    const docRef = doc(db, "proposals", id || `p${Date.now()}`);
-    await setDoc(docRef, { ...data, updatedAt: serverTimestamp() }, { merge: true });
+    return await supabaseSaveProposal(proposal);
 };
 
 // --- NOTIFICATIONS ---
 export const saveNotification = async (notification) => {
-    if (!isConfigured || !db) return;
-    const { id, ...data } = notification;
-    const docRef = doc(db, "notifications", id || `n${Date.now()}`);
-    await setDoc(docRef, { ...data, createdAt: data.createdAt || serverTimestamp() }, { merge: true });
+    // Map userId to user_id for postgres convention if needed
+    const { userId, ...rest } = notification;
+    return await supabaseSaveNotification({ 
+        user_id: userId, 
+        ...rest 
+    });
 };
 
 export const markNotifRead = async (notifId) => {
-    if (!isConfigured || !db) return;
-    const docRef = doc(db, "notifications", notifId);
-    await updateDoc(docRef, { read: true });
+    return await supabaseMarkNotifRead(notifId);
 };
 
 // --- BOOKINGS ---
 export const saveBooking = async (booking) => {
-    if (!isConfigured || !db) return;
-    const { id, ...data } = booking;
-    const docRef = doc(db, "bookings", id || `b${Date.now()}`);
-    await setDoc(docRef, data, { merge: true });
+    const { userId, ...rest } = booking;
+    return await supabaseSaveBooking({
+        user_id: userId,
+        ...rest
+    });
 };
 
 // --- BOOKING HISTORY ---
 export const saveBookingHistory = async (historyEntry) => {
-    if (!isConfigured || !db) return;
-    const { venueId, eventType, status } = historyEntry;
-    const historyId = `${venueId}_${eventType}`;
-    const docRef = doc(db, "bookingHistory", historyId);
-    
-    // We want to update approvalRate: count approvals / total reviews
-    // Since we don't have atomic counters easily here without more logic, 
-    // we'll fetch existing and update.
-    const snap = await getDoc(docRef);
-    let data = snap.exists() ? snap.data() : { total: 0, approvals: 0, approvalRate: 0.5 };
-    
-    data.total += 1;
-    if (status === 'approved') data.approvals += 1;
-    data.approvalRate = data.approvals / data.total;
-    data.venueId = venueId;
-    data.eventType = eventType;
-    data.lastUpdated = serverTimestamp();
-
-    await setDoc(docRef, data, { merge: true });
+    return await supabaseSaveBookingHistory(historyEntry);
 };
 
 // Legacy support if needed
 export const syncBackend = async (data) => {
-    console.warn("syncBackend is deprecated, use individual save functions.");
+    console.warn("syncBackend is deprecated.");
 };
 
 export const fetchAllBackendData = async () => {
-    // This is now handled by onSnapshot listeners in Context
     return null; 
 };

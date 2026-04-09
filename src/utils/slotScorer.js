@@ -7,8 +7,30 @@
  * @param {number} reviewerPendingCount Calculated externally
  * @returns {Object} { slot, score, label, reason }
  */
-export function scoreSlot(slot, eventType, venueId, historicalData, reviewerPendingCount = 0) {
-  let score = 0;
+export function scoreSlot(slot, eventType, venueId, historicalData, reviewerPendingCount) {
+  let score = 70; // Base score
+  const key = `${venueId}_${eventType}`;
+  const history = historicalData[key] || { approvalRate: 0.5 };
+  
+  // 1. Historical ML Weighting (Intelligence Engine)
+  // Boost slots that have higher historical approval rates for this venue/event combo
+  const approvalBoost = (history.approvalRate - 0.5) * 40; 
+  score += approvalBoost;
+
+  // 2. Day-of-week Bias (Students are more active mid-week)
+  const day = slot.start.getDay();
+  if ([2, 3, 4].includes(day)) score += 10; // Tue-Thu boost
+  if (day === 6) score -= 15; // Saturday penalty
+
+  // 3. Reviewer Load Penalty
+  // If many proposals are pending, favor slots further out to give reviewers time
+  const daysFromNow = (slot.start - new Date()) / (1000 * 60 * 60 * 24);
+  if (daysFromNow < 3 && reviewerPendingCount > 5) {
+      score -= 20;
+  } else if (daysFromNow > 7) {
+      score += 5; // Planning ahead boost
+  }
+
   const startHour = slot.start.getHours();
   
   // 1. Time-of-day fit (30 pts)

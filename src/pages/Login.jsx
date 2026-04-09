@@ -55,7 +55,7 @@ export default function Login() {
       }
       navigate('/dashboard');
     } catch (err) {
-      setError(err.message.replace('Firebase:', ''));
+      setError(err.message || "Authentication failed. Please check your credentials.");
     } finally {
       setLoading(false);
     }

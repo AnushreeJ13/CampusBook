@@ -14,20 +14,18 @@ import './Sidebar.css';
 const MENU_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
-    { to: '/venues', icon: MapPin, label: 'Browse Venues' },
     { to: '/events', icon: Eye, label: 'Upcoming Events' },
+    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
     { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/proposals/new', icon: PlusCircle, label: 'New Proposal' },
+    { to: '/attendance', icon: QrCode, label: 'Attendance Scanner' },
+    { to: '/proposals/new', icon: PlusCircle, label: 'New event Proposal' },
     { to: '/proposals', icon: FileText, label: 'My Proposals' },
-    { to: '/attendance', icon: QrCode, label: 'Attendance' },
-    { to: '/venues', icon: MapPin, label: 'Browse Venues' },
+    { to: '/venues', icon: MapPin, label: 'Venue Intelligence' },
     { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
-    { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.FACULTY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -51,7 +49,7 @@ const MENU_CONFIG = {
 };
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
-  const { user, logout, switchRole } = useAuth();
+  const { user, logout, switchRole, selectedCollege, selectCollege } = useAuth();
   const { resetData } = useProposals();
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
@@ -79,12 +77,18 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
         {/* Logo */}
         <div className="sidebar-logo">
           <div className="sidebar-logo-icon">
-            <Sparkles size={22} />
+            {selectedCollege?.logo || <Sparkles size={22} />}
           </div>
           {!collapsed && (
             <div className="sidebar-logo-text">
-              <span className="sidebar-brand">CampusBook</span>
-              <span className="sidebar-tagline">Intelligence Platform</span>
+              <span className="sidebar-brand">{selectedCollege?.name || 'CampusBook'}</span>
+              <span className="sidebar-tagline">{selectedCollege?.shortName || 'Intelligence Platform'}</span>
+              <button 
+                onClick={() => selectCollege(null)}
+                className="sidebar-switch-college"
+              >
+                <RefreshCw size={10} /> Switch College
+              </button>
               <span className="sidebar-role-tag">{user.role}</span>
             </div>
           )}
