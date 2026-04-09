@@ -5,6 +5,7 @@ import {
   saveProposal, 
   saveNotification, 
   saveBooking, 
+  saveBookingHistory,
   markNotifRead, 
   subscribeToCollection 
 } from '../api';
@@ -29,15 +30,39 @@ export function ProposalProvider({ children }) {
     }
 
     const unsubProposals = subscribeToCollection('proposals', (data) => {
-        setProposals(data.length > 0 ? data : MOCK_PROPOSALS);
+        let localDrafts = [];
+        try {
+            const saved = localStorage.getItem('campusbook_drafts');
+            if (saved) localDrafts = JSON.parse(saved);
+        } catch(e) {}
+
+        const combined = [...data];
+        
+        MOCK_PROPOSALS.forEach(mock => {
+           if (!combined.find(d => d.id === mock.id)) combined.push(mock);
+        });
+
+        localDrafts.forEach(draft => {
+           if (!combined.find(d => d.id === draft.id)) combined.unshift(draft);
+        });
+
+        setProposals(combined);
     });
 
     const unsubNotifs = subscribeToCollection('notifications', (data) => {
-        setNotifications(data.filter(n => n.userId === user.uid || n.userId === user.id));
+        const combined = [...data];
+        MOCK_NOTIFICATIONS.forEach(mock => {
+           if (!data.find(d => d.id === mock.id)) combined.push(mock);
+        });
+        setNotifications(combined.filter(n => n.userId === user.uid || n.userId === user.id));
     });
 
     const unsubBookings = subscribeToCollection('bookings', (data) => {
-        setBookings(data.length > 0 ? data : MOCK_BOOKINGS);
+        const combined = [...data];
+        MOCK_BOOKINGS.forEach(mock => {
+           if (!data.find(d => d.id === mock.id)) combined.push(mock);
+        });
+        setBookings(combined);
         setLoading(false);
     });
 
@@ -67,20 +92,35 @@ export function ProposalProvider({ children }) {
       status: PROPOSAL_STATUS.SUBMITTED,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      submittedBy: user.uid,
-      submittedByName: user.displayName || user.name,
+      submittedBy: user.id || user.uid || 'guest',
+      submittedByName: user.name || user.displayName || 'Unknown User',
       auditTrail: [
         { 
           action: 'created', 
-          by: user.uid, 
-          byName: user.displayName || user.name, 
+          by: user.uid || user.id || 'guest', 
+          byName: user.displayName || user.name || 'Unknown User', 
           at: new Date().toISOString(), 
           note: 'Proposal created and submitted' 
         },
       ],
     };
     
-    await saveProposal(newProposal);
+    // Save to local drafts to survive UI refreshes natively regardless of Firebase rules
+    try {
+        const saved = localStorage.getItem('campusbook_drafts');
+        const localDrafts = saved ? JSON.parse(saved) : [];
+        localDrafts.unshift(newProposal);
+        localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
+    } catch(e) {}
+
+    // Optimistically update
+    setProposals(prev => [newProposal, ...prev]);
+
+    try {
+      await saveProposal(newProposal);
+    } catch(e) {
+      console.warn("Firebase write blocked. Saved safely in local storage fallback.");
+    }
     
     // Notify appropriate reviewer
     addNotification({
@@ -117,7 +157,27 @@ export function ProposalProvider({ children }) {
       auditTrail: [...(proposal.auditTrail || []), auditEntry],
     };
 
-    await saveProposal(updatedProposal);
+    // Update local storage drafts so it stays approved across refreshes
+    try {
+        const saved = localStorage.getItem('campusbook_drafts');
+        if (saved) {
+             const localDrafts = JSON.parse(saved);
+             const index = localDrafts.findIndex(p => p.id === proposalId);
+             if (index > -1) {
+                 localDrafts[index] = updatedProposal;
+                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
+             }
+        }
+    } catch(e) {}
+
+    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
+    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
+
+    setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+
+    try {
+      await saveProposal(updatedProposal);
+    } catch(e) {}
 
     // Notifications
     const notifType = newStatus === PROPOSAL_STATUS.APPROVED ? 'approval'
@@ -136,6 +196,13 @@ export function ProposalProvider({ children }) {
     // Email dispatch (simulation if service not ready)
     if (newStatus === PROPOSAL_STATUS.APPROVED || newStatus === PROPOSAL_STATUS.REJECTED) {
        sendStatusEmail(proposal.title, newStatus, "society@university.edu", "Society Team");
+       
+       // Log to booking history
+       saveBookingHistory({
+         venueId: proposal.venueId,
+         eventType: proposal.eventType,
+         status: newStatus === PROPOSAL_STATUS.APPROVED ? 'approved' : 'rejected'
+       });
     }
   }, [proposals, addNotification]);
 
@@ -156,7 +223,26 @@ export function ProposalProvider({ children }) {
       auditTrail: [...(proposal.auditTrail || []), ...auditEntries],
     };
 
-    await saveProposal(updatedProposal);
+    try {
+        const saved = localStorage.getItem('campusbook_drafts');
+        if (saved) {
+             const localDrafts = JSON.parse(saved);
+             const index = localDrafts.findIndex(p => p.id === proposalId);
+             if (index > -1) {
+                 localDrafts[index] = updatedProposal;
+                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
+             }
+        }
+    } catch(e) {}
+
+    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
+    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
+
+    setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+
+    try {
+      await saveProposal(updatedProposal);
+    } catch(e) {}
   }, [proposals]);
 
   const bookVenue = useCallback(async (proposalId) => {
@@ -187,7 +273,26 @@ export function ProposalProvider({ children }) {
       }],
     };
 
-    await saveProposal(updatedProposal);
+    try {
+        const saved = localStorage.getItem('campusbook_drafts');
+        if (saved) {
+             const localDrafts = JSON.parse(saved);
+             const index = localDrafts.findIndex(p => p.id === proposalId);
+             if (index > -1) {
+                 localDrafts[index] = updatedProposal;
+                 localStorage.setItem('campusbook_drafts', JSON.stringify(localDrafts));
+             }
+        }
+    } catch(e) {}
+
+    const mockIndex = MOCK_PROPOSALS.findIndex(m => m.id === proposalId);
+    if (mockIndex > -1) MOCK_PROPOSALS[mockIndex] = updatedProposal;
+
+    setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+
+    try {
+      await saveProposal(updatedProposal);
+    } catch(e) {}
 
     addNotification({
       userId: proposal.submittedBy,

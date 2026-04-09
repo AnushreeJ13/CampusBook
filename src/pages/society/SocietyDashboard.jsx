@@ -11,7 +11,7 @@ export default function SocietyDashboard() {
   const { proposals } = useProposals();
   const { venues } = useVenues();
 
-  const myProposals = proposals.filter(p => p.clubId === user.clubId);
+  const myProposals = proposals.filter(p => p.clubId === user.clubId || p.submittedBy === user.uid || p.submittedBy === user.id);
   const approved = myProposals.filter(p => [PROPOSAL_STATUS.APPROVED, PROPOSAL_STATUS.VENUE_BOOKED].includes(p.status));
   const pending = myProposals.filter(p => [PROPOSAL_STATUS.SUBMITTED, PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW].includes(p.status));
   const rejected = myProposals.filter(p => p.status === PROPOSAL_STATUS.REJECTED);

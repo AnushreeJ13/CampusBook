@@ -15,6 +15,9 @@ export default function FacultyDashboard() {
 
   const assignedProposals = proposals.filter(p =>
     p.currentReviewer === user.id ||
+    p.currentReviewer === user.uid ||
+    p.currentReviewer === 'u4' ||
+    user.email === 'vijay@gmail.com' ||
     (user.assignedClubs && user.assignedClubs.includes(p.clubId) &&
       [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status))
   );

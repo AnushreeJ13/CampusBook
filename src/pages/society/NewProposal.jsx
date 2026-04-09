@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { EVENT_TYPES, TIME_SLOTS } from '../../utils/constants';
+import { MOCK_CLUBS } from '../../utils/mockData';
 import { calculateReadinessScore, autoCategorizEvent, detectConflicts } from '../../utils/aiHelpers';
-import { ArrowLeft, ArrowRight, Send, Sparkles, Upload, AlertTriangle, CheckCircle, Info } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Send, Sparkles, Upload, AlertTriangle, CheckCircle, Info, Calendar as CalendarIcon } from 'lucide-react';
+import SmartSlotSuggestions from '../../components/SmartSlotSuggestions';
 import './NewProposal.css';
 
 const STEPS = ['Basic Info', 'Logistics', 'Resources', 'Documents', 'Review'];
@@ -16,12 +18,27 @@ export default function NewProposal() {
   const { venues } = useVenues();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [manualMode, setManualMode] = useState(false);
   const [form, setForm] = useState({
     title: '', eventType: '', description: '', expectedAttendees: '',
-    date: '', timeSlot: '', venueId: '', resources: '', documents: [],
+    date: '', timeSlot: '', startTime: '', endTime: '', venueId: '', resources: '', documents: [],
   });
 
   const update = (field, value) => setForm(prev => ({ ...prev, [field]: value }));
+
+  const handleConfirmSlot = (slot) => {
+    update('date', slot.start.toISOString().split('T')[0]);
+    update('startTime', slot.start.toISOString());
+    update('endTime', slot.end.toISOString());
+    update('timeSlot', 'custom'); // Mark as custom to bypass selection
+    setManualMode(false);
+    
+    // Auto-advance or scroll to resources?
+    setTimeout(() => {
+        const nav = document.querySelector('.form-nav');
+        nav?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
 
   const selectedVenue = venues.find(v => v.id === form.venueId);
 
@@ -40,14 +57,15 @@ export default function NewProposal() {
   }, proposals, venues), [form, proposals, venues, user.clubId]);
 
   const handleSubmit = () => {
+    const club = MOCK_CLUBS.find(c => c.id === user.clubId);
     const proposal = {
       ...form,
       expectedAttendees: parseInt(form.expectedAttendees) || 0,
-      clubId: user.clubId,
-      clubName: user.clubName,
-      submittedBy: user.id,
-      submittedByName: user.name,
-      currentReviewer: 'u4',
+      clubId: user.clubId || '',
+      clubName: user.clubName || 'Unknown Club',
+      submittedBy: user.id || user.uid || '',
+      submittedByName: user.name || user.displayName || 'Unknown User',
+      currentReviewer: club?.facultyAdvisorId || 'u4', // Dynamic lookup with fallback
       documents: form.documents,
     };
     submitProposal(proposal);
@@ -118,27 +136,14 @@ export default function NewProposal() {
           {step === 1 && (
             <div className="form-step animate-fade-in">
               <h2 className="form-step-title">Logistics</h2>
+              
               <div className="input-group">
                 <label>Expected Attendees *</label>
                 <input className="input-field" type="number" placeholder="e.g., 120" value={form.expectedAttendees} onChange={e => update('expectedAttendees', e.target.value)} />
               </div>
-              <div className="grid grid-2 gap-lg">
-                <div className="input-group">
-                  <label>Event Date *</label>
-                  <input className="input-field" type="date" value={form.date} onChange={e => update('date', e.target.value)} />
-                </div>
-                <div className="input-group">
-                  <label>Time Slot *</label>
-                  <select className="input-field" value={form.timeSlot} onChange={e => update('timeSlot', e.target.value)}>
-                    <option value="">Select a time slot</option>
-                    {TIME_SLOTS.map(ts => (
-                      <option key={ts.id} value={ts.id}>{ts.label}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+
               <div className="input-group">
-                <label>Venue Preference</label>
+                <label>Venue Preference *</label>
                 <select className="input-field" value={form.venueId} onChange={e => update('venueId', e.target.value)}>
                   <option value="">Select a venue</option>
                   {venues.map(v => (
@@ -146,8 +151,61 @@ export default function NewProposal() {
                   ))}
                 </select>
               </div>
+
+              {form.venueId && (
+                <div className="scheduler-section mt-4 p-4 rounded-lg bg-gray-50 border border-gray-200">
+                  <div className="flex justify-between items-center mb-4 border-b border-gray-200 pb-3">
+                    <label style={{ margin: 0, fontSize: 'var(--font-sm)', fontWeight: 600, color: 'var(--text-primary)' }}>Select Date & Time *</label>
+                    <button 
+                      onClick={() => setManualMode(!manualMode)}
+                      className="text-primary text-sm font-medium flex items-center gap-1 hover:underline"
+                      style={{ background: 'none', border: 'none', cursor: 'pointer' }}
+                    >
+                      {manualMode ? <><Sparkles size={14} /> Use Smart Recommendations</> : <><CalendarIcon size={14} /> Pick Date/Time Manually</>}
+                    </button>
+                  </div>
+
+                  {!manualMode && form.eventType ? (
+                    <div className="smart-scheduler-container">
+                      <SmartSlotSuggestions 
+                        venueId={form.venueId}
+                        eventType={form.eventType}
+                        durationMinutes={120} // Default 2h for now
+                        preferredDate={form.date || new Date()}
+                        onConfirm={handleConfirmSlot}
+                        onOpenCalendar={() => setManualMode(true)}
+                      />
+                      {form.startTime && form.timeSlot === 'custom' && (
+                        <div className="selected-slot-indicator animate-fade-in mt-3 p-3 bg-green-50 text-green-700 rounded-md border border-green-200 flex items-center gap-2 text-sm">
+                          <CheckCircle size={16} />
+                          <span>Slot Selected: <strong>{new Date(form.startTime).toLocaleDateString()} at {new Date(form.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</strong></span>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="manual-logistics-grid animate-fade-in">
+                      <div className="grid grid-2 gap-lg p-2">
+                        <div className="input-group">
+                          <label>Event Date *</label>
+                          <input className="input-field" type="date" value={form.date} onChange={e => update('date', e.target.value)} />
+                        </div>
+                        <div className="input-group">
+                          <label>Time Slot *</label>
+                          <select className="input-field" value={form.timeSlot} onChange={e => update('timeSlot', e.target.value)}>
+                            <option value="">Select a time slot</option>
+                            {TIME_SLOTS.map(ts => (
+                              <option key={ts.id} value={ts.id}>{ts.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {selectedVenue && parseInt(form.expectedAttendees) > selectedVenue.capacity && (
-                <div className="conflict-alert">
+                <div className="conflict-alert" style={{ marginTop: '1rem' }}>
                   <AlertTriangle size={16} />
                   <span>⚠️ Attendees ({form.expectedAttendees}) exceed venue capacity ({selectedVenue.capacity})</span>
                 </div>
@@ -240,7 +298,14 @@ export default function NewProposal() {
               <ArrowLeft size={16} /> {step === 0 ? 'Cancel' : 'Back'}
             </button>
             {step < STEPS.length - 1 ? (
-              <button className="btn btn-primary" onClick={() => setStep(step + 1)}>
+              <button 
+                className="btn btn-primary" 
+                disabled={
+                  (step === 0 && (!form.title || !form.eventType || !form.description)) ||
+                  (step === 1 && (!form.expectedAttendees || !form.venueId || (!manualMode && !form.startTime) || (manualMode && (!form.date || !form.timeSlot))))
+                }
+                onClick={() => setStep(step + 1)}
+              >
                 Next <ArrowRight size={16} />
               </button>
             ) : (

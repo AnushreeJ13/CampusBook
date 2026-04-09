@@ -1,6 +1,7 @@
 import { db, isConfigured } from './firebase';
 import { 
   doc, 
+  getDoc,
   getDocs, 
   collection, 
   addDoc, 
@@ -57,6 +58,29 @@ export const saveBooking = async (booking) => {
     if (!isConfigured || !db) return;
     const { id, ...data } = booking;
     const docRef = doc(db, "bookings", id || `b${Date.now()}`);
+    await setDoc(docRef, data, { merge: true });
+};
+
+// --- BOOKING HISTORY ---
+export const saveBookingHistory = async (historyEntry) => {
+    if (!isConfigured || !db) return;
+    const { venueId, eventType, status } = historyEntry;
+    const historyId = `${venueId}_${eventType}`;
+    const docRef = doc(db, "bookingHistory", historyId);
+    
+    // We want to update approvalRate: count approvals / total reviews
+    // Since we don't have atomic counters easily here without more logic, 
+    // we'll fetch existing and update.
+    const snap = await getDoc(docRef);
+    let data = snap.exists() ? snap.data() : { total: 0, approvals: 0, approvalRate: 0.5 };
+    
+    data.total += 1;
+    if (status === 'approved') data.approvals += 1;
+    data.approvalRate = data.approvals / data.total;
+    data.venueId = venueId;
+    data.eventType = eventType;
+    data.lastUpdated = serverTimestamp();
+
     await setDoc(docRef, data, { merge: true });
 };
 

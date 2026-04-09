@@ -3,7 +3,7 @@ import { PROPOSAL_STATUS, ROLES } from './constants';
 export const MOCK_USERS = [
   { id: 'u1', name: 'Anushree Jain', email: 'anushree@university.edu', role: ROLES.STUDENT, avatar: '👩‍🎓' },
   { id: 'u2', name: 'Riya Sharma', email: 'riya@university.edu', role: ROLES.SOCIETY, clubId: 'c1', clubName: 'Tech Society', avatar: '👩‍💻' },
-  { id: 'u4', name: 'Dr. Priya Kapoor', email: 'priya.k@university.edu', role: ROLES.FACULTY, assignedClubs: ['c1'], avatar: '👩‍🏫' },
+  { id: 'u4', name: 'Vijay', email: 'vijay@gmail.com', role: ROLES.FACULTY, assignedClubs: ['c1'], avatar: '👨‍🏫' },
   { id: 'u6', name: 'Vikram Singh', email: 'vikram@university.edu', role: ROLES.ADMIN, avatar: '🛡️' }
 ];
 
