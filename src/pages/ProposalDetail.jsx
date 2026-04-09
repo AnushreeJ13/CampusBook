@@ -6,20 +6,37 @@ import { PROPOSAL_STATUS, STATUS_LABELS, ROLES, TIME_SLOTS } from '../utils/cons
 import { generateAISummary } from '../utils/aiHelpers';
 import {
   ArrowLeft, CheckCircle, XCircle, Edit3, Send, Sparkles,
-  Calendar, MapPin, Users, FileText, Clock, AlertTriangle, ChevronRight
+  Calendar, MapPin, Users, FileText, Clock, AlertTriangle, ChevronRight, Lock, ChevronDown
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 export default function ProposalDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { proposals, updateProposalStatus, approveAndForward, bookVenue } = useProposals();
+  const { proposals, updateProposalStatus, approveAndForward, bookVenue, isCurrentReviewer, hasUserActed, fetchReviewers } = useProposals();
   const { venues } = useVenues();
   const [comment, setComment] = useState('');
   const [showActions, setShowActions] = useState(false);
 
+  // Forward-to dropdown state
+  const [reviewersList, setReviewersList] = useState([]);
+  const [selectedNextReviewer, setSelectedNextReviewer] = useState('');
+  const [loadingReviewers, setLoadingReviewers] = useState(false);
+
   const proposal = proposals.find(p => p.id === id);
+
+  // Fetch available reviewers when actions panel is opened
+  useEffect(() => {
+    if (showActions && proposal) {
+      setLoadingReviewers(true);
+      fetchReviewers(user?.college || null).then(users => {
+        setReviewersList(users);
+        setLoadingReviewers(false);
+      });
+    }
+  }, [showActions, proposal, fetchReviewers, user?.college]);
+
   if (!proposal) {
     return (
       <div className="page-container">
@@ -36,33 +53,66 @@ export default function ProposalDetail() {
   const venue = venues.find(v => v.id === proposal.venueId);
   const aiSummary = generateAISummary(proposal);
   const timeSlot = TIME_SLOTS.find(t => t.id === proposal.timeSlot);
-  const canReview = 
-    user.email === 'vijay@gmail.com' || 
-    user.role === ROLES.ADMIN ||
-    ((user.role === ROLES.FACULTY) &&
-      (proposal.currentReviewer === user.id || proposal.currentReviewer === user.uid || proposal.currentReviewer === 'u4' || user.assignedClubs?.includes(proposal.clubId)));
-      
-  const isAdmin = user.role === ROLES.ADMIN || user.email === 'admin@gmail.com';
+
+  // STRICT ACCESS CONTROL: Only the currently assigned reviewer can review
+  const canReview = isCurrentReviewer(proposal);
+  
+  // Check if user has already acted on this proposal (for showing the locked-out banner)
+  const currentUserId = user.uid || user.id;
+  const alreadyActed = hasUserActed(proposal, currentUserId);
+  const isReviewerRole = user.role === ROLES.FACULTY || user.role === ROLES.ADMIN;
+  
+  // Check if this is a final approval (admin doing the last review)
+  const isAdmin = user.role === ROLES.ADMIN;
+  const isFinalApproval = isAdmin; // Admin approvals are final
 
   const handleApprove = () => {
-    if (user.role === ROLES.FACULTY || user.email === 'vijay@gmail.com') {
-      approveAndForward(proposal.id, user.id, user.name, comment || 'Approved by Faculty Advisor', PROPOSAL_STATUS.HOD_REVIEW, 'u6');
-    } else if (isAdmin) {
-      updateProposalStatus(proposal.id, PROPOSAL_STATUS.APPROVED, user.id, user.name, comment || 'Final approval granted');
+    if (isFinalApproval) {
+      // Admin final approval — no forwarding needed
+      updateProposalStatus(proposal.id, PROPOSAL_STATUS.APPROVED, currentUserId, user.name || user.displayName, comment || 'Final approval granted');
       setTimeout(() => bookVenue(proposal.id), 500);
+    } else {
+      // Faculty/HOD — must forward to next reviewer
+      if (!selectedNextReviewer) {
+        alert('Please select a reviewer to forward the proposal to.');
+        return;
+      }
+      const nextPerson = reviewersList.find(r => r.id === selectedNextReviewer);
+      approveAndForward(
+        proposal.id,
+        currentUserId,
+        user.name || user.displayName,
+        comment || 'Approved and forwarded',
+        PROPOSAL_STATUS.HOD_REVIEW,
+        selectedNextReviewer,
+        nextPerson?.name || 'Next Reviewer'
+      );
     }
     setShowActions(false);
     setComment('');
+    setSelectedNextReviewer('');
   };
 
   const handleReject = () => {
-    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REJECTED, user.id, user.name, comment || 'Rejected');
+    updateProposalStatus(
+      proposal.id,
+      PROPOSAL_STATUS.REJECTED,
+      currentUserId,
+      user.name || user.displayName,
+      comment || 'Rejected'
+    );
     setShowActions(false);
     setComment('');
   };
 
   const handleRevision = () => {
-    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REVISION_REQUESTED, user.id, user.name, comment || 'Changes requested');
+    updateProposalStatus(
+      proposal.id,
+      PROPOSAL_STATUS.REVISION_REQUESTED,
+      currentUserId,
+      user.name || user.displayName,
+      comment || 'Changes requested'
+    );
     setShowActions(false);
     setComment('');
   };
@@ -112,6 +162,52 @@ export default function ProposalDetail() {
           )}
         </div>
       </div>
+
+      {/* LOCKED OUT BANNER: Show when reviewer has acted but is not currently assigned */}
+      {alreadyActed && !canReview && isReviewerRole && (
+        <div className="card" style={{
+          marginBottom: 'var(--space-lg)',
+          borderColor: 'var(--status-warning)',
+          background: 'rgba(245, 158, 11, 0.08)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-md)',
+          padding: 'var(--space-md) var(--space-lg)',
+        }}>
+          <Lock size={20} color="var(--status-warning)" />
+          <div>
+            <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--status-warning)', marginBottom: '2px' }}>
+              Review Completed — Read Only
+            </h4>
+            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+              You have already reviewed this proposal. You'll regain access if it is re-assigned to you.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* NOT YOUR TURN BANNER: Show for reviewers who haven't acted but aren't assigned */}
+      {!alreadyActed && !canReview && isReviewerRole && proposal.currentReviewer && proposal.currentReviewer !== currentUserId && (
+        <div className="card" style={{
+          marginBottom: 'var(--space-lg)',
+          borderColor: 'var(--border-secondary)',
+          background: 'var(--bg-glass)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 'var(--space-md)',
+          padding: 'var(--space-md) var(--space-lg)',
+        }}>
+          <Clock size={20} color="var(--text-tertiary)" />
+          <div>
+            <h4 style={{ fontSize: 'var(--font-sm)', fontWeight: 700, color: 'var(--text-secondary)', marginBottom: '2px' }}>
+              Not Assigned to You
+            </h4>
+            <p style={{ fontSize: 'var(--font-xs)', color: 'var(--text-tertiary)', lineHeight: 1.5 }}>
+              This proposal is currently being reviewed by another authority. You don't have review permissions at this time.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="detail-layout">
         {/* Main Content */}
@@ -199,17 +295,61 @@ export default function ProposalDetail() {
             </div>
           )}
 
-          {/* Review Actions */}
+          {/* Review Actions — Only visible to the CURRENT reviewer */}
           {canReview && showActions && (
             <div className="card" style={{ borderColor: 'var(--accent-glow)', marginBottom: 'var(--space-lg)' }}>
               <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700, marginBottom: 'var(--space-lg)' }}>Review Actions</h3>
+              
               <div className="input-group" style={{ marginBottom: 'var(--space-lg)' }}>
                 <label>Comment / Note</label>
                 <textarea className="input-field" placeholder="Add a comment or note for the proposer..." rows={3} value={comment} onChange={e => setComment(e.target.value)} />
               </div>
+
+              {/* Forward-to Dropdown — only for non-admin (faculty forwards to next authority) */}
+              {!isFinalApproval && (
+                <div className="input-group" style={{ marginBottom: 'var(--space-lg)' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-sm)' }}>
+                    <Send size={14} /> Forward To (Required for Approval)
+                  </label>
+                  {loadingReviewers ? (
+                    <div style={{ padding: 'var(--space-md)', color: 'var(--text-tertiary)', fontSize: 'var(--font-sm)' }}>
+                      Loading reviewers...
+                    </div>
+                  ) : (
+                    <select
+                      className="input-field"
+                      value={selectedNextReviewer}
+                      onChange={e => setSelectedNextReviewer(e.target.value)}
+                      style={{
+                        background: 'var(--bg-surface)',
+                        border: selectedNextReviewer ? '2px solid var(--status-success)' : '2px solid var(--border-primary)',
+                        transition: 'border-color 0.2s ease',
+                      }}
+                    >
+                      <option value="">— Select a reviewer to forward to —</option>
+                      {reviewersList.map(r => (
+                        <option key={r.id} value={r.id}>
+                          {r.name} — {r.role === 'admin' ? 'Admin' : 'Faculty'} ({r.email})
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  {reviewersList.length === 0 && !loadingReviewers && (
+                    <p style={{ fontSize: 'var(--font-xs)', color: 'var(--status-warning)', marginTop: 'var(--space-sm)' }}>
+                      ⚠️ No faculty or admin users found. Make sure they have registered on CampusBook.
+                    </p>
+                  )}
+                </div>
+              )}
+
               <div className="flex gap-md flex-wrap">
-                <button className="btn btn-success" onClick={handleApprove}>
-                  <CheckCircle size={16} /> Approve{user.role === ROLES.FACULTY ? ' & Forward' : ' & Book Venue'}
+                <button
+                  className="btn btn-success"
+                  onClick={handleApprove}
+                  disabled={!isFinalApproval && !selectedNextReviewer}
+                  title={!isFinalApproval && !selectedNextReviewer ? 'Select a reviewer to forward to' : ''}
+                >
+                  <CheckCircle size={16} /> {isFinalApproval ? 'Approve & Book Venue' : 'Approve & Forward'}
                 </button>
                 <button className="btn btn-danger" onClick={handleReject}>
                   <XCircle size={16} /> Reject
@@ -243,15 +383,18 @@ export default function ProposalDetail() {
                     background: entry.action === 'approved' || entry.action === 'venue_booked' ? 'rgba(34,197,94,0.15)'
                       : entry.action === 'rejected' ? 'rgba(239,68,68,0.15)'
                       : entry.action === 'revision_requested' ? 'rgba(245,158,11,0.15)'
+                      : entry.action === 'forwarded' ? 'rgba(59,130,246,0.15)'
                       : 'var(--bg-glass)',
                     border: `2px solid ${entry.action === 'approved' || entry.action === 'venue_booked' ? 'var(--status-success)'
                       : entry.action === 'rejected' ? 'var(--status-error)'
                       : entry.action === 'revision_requested' ? 'var(--status-warning)'
+                      : entry.action === 'forwarded' ? 'var(--status-info)'
                       : 'var(--border-secondary)'}`,
                     zIndex: 2,
                   }}>
                     {entry.action === 'approved' || entry.action === 'venue_booked' ? <CheckCircle size={10} color="var(--status-success)" /> :
                      entry.action === 'rejected' ? <XCircle size={10} color="var(--status-error)" /> :
+                     entry.action === 'forwarded' ? <Send size={10} color="var(--status-info)" /> :
                      <ChevronRight size={10} color="var(--text-tertiary)" />}
                   </div>
                   {/* Content */}

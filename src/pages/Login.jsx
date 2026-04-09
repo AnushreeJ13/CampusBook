@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { ROLES, ROLE_LABELS } from '../utils/constants';
-import { Sparkles, Mail, Lock, User, GraduationCap, Users, BookOpen, Shield, Phone, LogIn } from 'lucide-react';
+import { fetchFacultyByCollege } from '../api';
+import { Sparkles, Mail, Lock, User, GraduationCap, Users, BookOpen, Shield, Phone, LogIn, FileText, UserCheck } from 'lucide-react';
 import './Login.css';
 
 export default function Login() {
@@ -31,16 +32,40 @@ export default function Login() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
+  // Society-specific fields
+  const [societyDescription, setSocietyDescription] = useState('');
+  const [facultyAdvisorId, setFacultyAdvisorId] = useState('');
+  const [facultyList, setFacultyList] = useState([]);
+  const [loadingFaculty, setLoadingFaculty] = useState(false);
+  const [registrationComplete, setRegistrationComplete] = useState(false);
+
   const navigate = useNavigate();
 
-  // Redirect if logged in and profile complete
+  // Redirect if logged in and profile complete (and not pending approval)
   useEffect(() => {
-    if (user && !user.incomplete) {
+    if (user && !user.incomplete && !user.pendingApproval && !user.rejectedApproval) {
       navigate('/dashboard');
     } else if (user?.incomplete) {
       setMode('google-setup');
     }
   }, [user, navigate]);
+
+  // Fetch faculty list when college changes and role is society
+  useEffect(() => {
+    if (role === ROLES.SOCIETY && college && college.length >= 3) {
+      setLoadingFaculty(true);
+      fetchFacultyByCollege(college).then(list => {
+        setFacultyList(list);
+        setLoadingFaculty(false);
+      }).catch(() => {
+        setFacultyList([]);
+        setLoadingFaculty(false);
+      });
+    } else {
+      setFacultyList([]);
+      setFacultyAdvisorId('');
+    }
+  }, [college, role]);
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();
@@ -51,9 +76,29 @@ export default function Login() {
         await loginWithEmail(email, password);
       } else {
         if (!college) throw new Error("College name is compulsory.");
-        await register(email, password, name, college, role);
+        
+        // Society-specific validation
+        if (role === ROLES.SOCIETY) {
+          if (!societyDescription.trim()) throw new Error("Please describe your society's purpose.");
+          if (!facultyAdvisorId) throw new Error("Please select a faculty advisor for your society.");
+        }
+
+        const selectedFaculty = facultyList.find(f => f.id === facultyAdvisorId);
+        await register(email, password, name, college, role, {
+          societyDescription: societyDescription.trim(),
+          facultyAdvisorId,
+          facultyAdvisorName: selectedFaculty?.name || '',
+        });
+
+        // If society, show the pending screen instead of navigating
+        if (role === ROLES.SOCIETY) {
+          setRegistrationComplete(true);
+          setLoading(false);
+          return;
+        }
+
+        navigate('/dashboard');
       }
-      navigate('/dashboard');
     } catch (err) {
       setError(err.message.replace('Firebase:', ''));
     } finally {
@@ -119,6 +164,115 @@ export default function Login() {
       setLoading(false);
     }
   };
+
+  // Pending Approval Screen — shown after successful society registration
+  if (registrationComplete || user?.pendingApproval) {
+    return (
+      <div className="login-page">
+        <div className="login-bg">
+          <div className="login-bg-orb login-bg-orb-1" />
+          <div className="login-bg-orb login-bg-orb-2" />
+          <div className="login-bg-grid" />
+        </div>
+        <div className="login-container" style={{ maxWidth: 480 }}>
+          <div className="login-header">
+            <div className="login-logo" style={{ background: 'linear-gradient(135deg, #f59e0b, #d97706)' }}>
+              <UserCheck size={32} />
+            </div>
+            <h1 className="login-title">Pending Approval</h1>
+            <p className="login-subtitle" style={{ maxWidth: 360 }}>
+              Your society registration is being reviewed by your faculty advisor.
+            </p>
+          </div>
+
+          <div style={{
+            background: 'rgba(245, 158, 11, 0.08)',
+            border: '1px solid rgba(245, 158, 11, 0.25)',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+              <span style={{ fontSize: 20 }}>⏳</span>
+              <h3 style={{ fontSize: 15, fontWeight: 700, color: '#f59e0b' }}>Awaiting Faculty Approval</h3>
+            </div>
+            <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6 }}>
+              Your account has been created but is pending approval from your chosen faculty advisor. 
+              You'll be able to log in once they approve your registration.
+            </p>
+            {user?.facultyAdvisorName && (
+              <p style={{ fontSize: 13, color: '#9ca3af', marginTop: 8 }}>
+                <strong style={{ color: '#e5e7eb' }}>Faculty Advisor:</strong> {user.facultyAdvisorName}
+              </p>
+            )}
+          </div>
+
+          <button className="login-btn" onClick={async () => {
+            if (window.confirm('You can check back later. Sign out now?')) {
+              try {
+                await loginWithEmail; // no-op to reference
+              } catch(e) {}
+              // Force sign out and reload
+              window.location.reload();
+            }
+          }} style={{ 
+            background: 'transparent', 
+            border: '1px solid rgba(255,255,255,0.15)', 
+            color: '#9ca3af',
+            cursor: 'pointer',
+          }}>
+            Sign Out & Check Back Later
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Rejected Screen
+  if (user?.rejectedApproval) {
+    return (
+      <div className="login-page">
+        <div className="login-bg">
+          <div className="login-bg-orb login-bg-orb-1" />
+          <div className="login-bg-orb login-bg-orb-2" />
+          <div className="login-bg-grid" />
+        </div>
+        <div className="login-container" style={{ maxWidth: 480 }}>
+          <div className="login-header">
+            <div className="login-logo" style={{ background: 'linear-gradient(135deg, #ef4444, #b91c1c)' }}>
+              <Shield size={32} />
+            </div>
+            <h1 className="login-title">Registration Rejected</h1>
+          </div>
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.08)',
+            border: '1px solid rgba(239, 68, 68, 0.25)',
+            borderRadius: 12,
+            padding: '20px 24px',
+            marginBottom: 20,
+          }}>
+            <p style={{ fontSize: 13, color: '#9ca3af', lineHeight: 1.6 }}>
+              Your society registration was not approved by the faculty advisor. 
+              Please contact them for more details or try registering again with a different advisor.
+            </p>
+            {user?.approvalNote && (
+              <p style={{ fontSize: 13, color: '#f87171', marginTop: 8 }}>
+                <strong>Reason:</strong> {user.approvalNote}
+              </p>
+            )}
+          </div>
+          <button className="login-btn" onClick={() => window.location.reload()} style={{ 
+            background: 'transparent', 
+            border: '1px solid rgba(255,255,255,0.15)', 
+            color: '#9ca3af',
+            cursor: 'pointer',
+          }}>
+            Sign Out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="login-page">
@@ -218,6 +372,95 @@ export default function Login() {
                         <option value={ROLES.ADMIN}>Admin</option>
                       </select>
                     </div>
+
+                    {/* === SOCIETY-SPECIFIC FIELDS === */}
+                    {role === ROLES.SOCIETY && (
+                      <div style={{
+                        background: 'rgba(139, 92, 246, 0.06)',
+                        border: '1px solid rgba(139, 92, 246, 0.2)',
+                        borderRadius: 12,
+                        padding: '16px 18px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 14,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 }}>
+                          <Users size={16} color="#8b5cf6" />
+                          <span style={{ fontSize: 13, fontWeight: 700, color: '#8b5cf6' }}>Society Details</span>
+                        </div>
+
+                        {/* Society Description / Purpose */}
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                          <label style={{ fontSize: 12, color: '#9ca3af' }}>
+                            <FileText size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                            Purpose / Description *
+                          </label>
+                          <textarea
+                            className="role-select"
+                            placeholder="Describe what your society does, its goals, and what kind of events you organize..."
+                            rows={3}
+                            value={societyDescription}
+                            onChange={e => setSocietyDescription(e.target.value)}
+                            required
+                            style={{
+                              resize: 'vertical',
+                              minHeight: 70,
+                              fontFamily: 'inherit',
+                              fontSize: 13,
+                              padding: '10px 12px',
+                              lineHeight: 1.5,
+                            }}
+                          />
+                        </div>
+
+                        {/* Faculty Advisor Dropdown */}
+                        <div className="input-group" style={{ marginBottom: 0 }}>
+                          <label style={{ fontSize: 12, color: '#9ca3af' }}>
+                            <UserCheck size={14} style={{ display: 'inline', marginRight: 4, verticalAlign: 'middle' }} />
+                            Choose Faculty Advisor *
+                          </label>
+                          {!college || college.length < 3 ? (
+                            <p style={{ fontSize: 12, color: '#6b7280', padding: '8px 0' }}>
+                              ↑ Enter your college name above to see available faculty advisors
+                            </p>
+                          ) : loadingFaculty ? (
+                            <p style={{ fontSize: 12, color: '#6b7280', padding: '8px 0' }}>Loading faculty members...</p>
+                          ) : (
+                            <>
+                              <select
+                                className="role-select"
+                                value={facultyAdvisorId}
+                                onChange={e => setFacultyAdvisorId(e.target.value)}
+                                required
+                                style={{
+                                  border: facultyAdvisorId ? '2px solid #22c55e' : undefined,
+                                  transition: 'border-color 0.2s',
+                                }}
+                              >
+                                <option value="">— Select a faculty advisor —</option>
+                                {facultyList.map(f => (
+                                  <option key={f.id} value={f.id}>
+                                    {f.name} ({f.email})
+                                  </option>
+                                ))}
+                              </select>
+                              {facultyList.length === 0 && (
+                                <p style={{ fontSize: 11, color: '#f59e0b', marginTop: 4 }}>
+                                  ⚠️ No faculty found for "{college}". Make sure faculty have registered with the exact same college name.
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+
+                        <div style={{
+                          padding: '8px 12px', background: 'rgba(245, 158, 11, 0.08)',
+                          borderRadius: 8, fontSize: 11, color: '#9ca3af', lineHeight: 1.5,
+                        }}>
+                          💡 Your faculty advisor will receive a request and must approve your registration before you can log in.
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 

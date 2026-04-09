@@ -50,7 +50,8 @@ function AppLayout() {
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (!user || user.incomplete) {
+  // Gate: no user, incomplete profile, or society pending/rejected approval
+  if (!user || user.incomplete || user.pendingApproval || user.rejectedApproval) {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />

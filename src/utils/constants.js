@@ -81,4 +81,11 @@ export const NOTIFICATION_TYPES = {
   BOOKING: 'booking',
   SUBMISSION: 'submission',
   COMMENT: 'comment',
+  SOCIETY_REQUEST: 'society_request',
+};
+
+export const SOCIETY_STATUS = {
+  PENDING: 'pending_approval',
+  APPROVED: 'approved',
+  REJECTED: 'rejected',
 };

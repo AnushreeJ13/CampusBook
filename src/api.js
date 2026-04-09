@@ -84,6 +84,68 @@ export const saveBookingHistory = async (historyEntry) => {
     await setDoc(docRef, data, { merge: true });
 };
 
+// --- USERS ---
+/**
+ * Fetch all faculty & admin users from Firestore (for the "forward to" dropdown).
+ * Optionally filter by college.
+ */
+export const fetchUsers = async (college = null) => {
+    if (!isConfigured || !db) return [];
+    try {
+        let q;
+        if (college) {
+            q = query(
+                collection(db, "users"),
+                where("role", "in", ["faculty", "admin"]),
+                where("college", "==", college)
+            );
+        } else {
+            q = query(
+                collection(db, "users"),
+                where("role", "in", ["faculty", "admin"])
+            );
+        }
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+        console.error("fetchUsers error:", e);
+        return [];
+    }
+};
+
+/**
+ * Fetch faculty users from a specific college (for society registration advisor dropdown).
+ */
+export const fetchFacultyByCollege = async (college) => {
+    if (!isConfigured || !db || !college) return [];
+    try {
+        const q = query(
+            collection(db, "users"),
+            where("role", "==", "faculty"),
+            where("college", "==", college)
+        );
+        const snapshot = await getDocs(q);
+        return snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch (e) {
+        console.error("fetchFacultyByCollege error:", e);
+        return [];
+    }
+};
+
+/**
+ * Update a user's profile document in Firestore (used for society approval/rejection).
+ */
+export const updateUserProfile = async (userId, updates) => {
+    if (!isConfigured || !db || !userId) return;
+    try {
+        const docRef = doc(db, "users", userId);
+        await updateDoc(docRef, updates);
+    } catch (e) {
+        console.error("updateUserProfile error:", e);
+        throw e;
+    }
+};
+
 // Legacy support if needed
 export const syncBackend = async (data) => {
     console.warn("syncBackend is deprecated, use individual save functions.");

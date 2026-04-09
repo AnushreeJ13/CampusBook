@@ -13,7 +13,9 @@ import {
   RecaptchaVerifier
 } from '../firebase';
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
-import { ROLES } from '../utils/constants';
+import { ROLES, SOCIETY_STATUS } from '../utils/constants';
+import { saveNotification } from '../api';
+import { updateUserProfile } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -37,6 +39,13 @@ export function AuthProvider({ children }) {
 
         if (userDoc.exists()) {
           const profileData = userDoc.data();
+          
+          // Check if this is a society account pending approval
+          const isPending = profileData.role === ROLES.SOCIETY && 
+                            profileData.status === SOCIETY_STATUS.PENDING;
+          const isRejected = profileData.role === ROLES.SOCIETY && 
+                             profileData.status === SOCIETY_STATUS.REJECTED;
+
           setUser({
             uid: firebaseUser.uid,
             id: firebaseUser.uid,
@@ -44,7 +53,10 @@ export function AuthProvider({ children }) {
             phoneNumber: firebaseUser.phoneNumber,
             displayName: profileData.name || firebaseUser.displayName,
             avatar: profileData.avatar || (firebaseUser.displayName ? firebaseUser.displayName[0] : '👤'),
-            ...profileData
+            ...profileData,
+            // Gate flags
+            pendingApproval: isPending,
+            rejectedApproval: isRejected,
           });
           if (profileData.college) {
             setUniversity(profileData.college);
@@ -72,12 +84,58 @@ export function AuthProvider({ children }) {
 
   // -- AUTH ACTIONS --
 
-  const register = async (email, password, name, college, role) => {
+  /**
+   * Register a new user. For society accounts:
+   * - Saves with status: 'pending_approval'
+   * - Includes societyDescription and facultyAdvisorId
+   * - Sends a notification to the chosen faculty advisor
+   * The society cannot log in until the faculty approves.
+   */
+  const register = async (email, password, name, college, role, extraData = {}) => {
     if (!isConfigured || !auth) throw new Error("Firebase not configured. Please add your credentials to firebase.js");
     const res = await createUserWithEmailAndPassword(auth, email, password);
     const userDocRef = doc(db, "users", res.user.uid);
-    const profile = { name, college, role, createdAt: new Date().toISOString() };
+    
+    const profile = { 
+      name, 
+      college, 
+      role, 
+      createdAt: new Date().toISOString() 
+    };
+
+    // Society-specific fields
+    if (role === ROLES.SOCIETY) {
+      profile.status = SOCIETY_STATUS.PENDING;
+      profile.societyDescription = extraData.societyDescription || '';
+      profile.facultyAdvisorId = extraData.facultyAdvisorId || '';
+      profile.facultyAdvisorName = extraData.facultyAdvisorName || '';
+    } else {
+      // Non-society accounts are immediately approved
+      profile.status = 'approved';
+    }
+
     await setDoc(userDocRef, profile);
+
+    // If society, send notification to the faculty advisor for approval
+    if (role === ROLES.SOCIETY && extraData.facultyAdvisorId) {
+      const notif = {
+        id: `n${Date.now()}`,
+        userId: extraData.facultyAdvisorId,
+        type: 'society_request',
+        title: 'Society Registration Request',
+        message: `"${name}" from ${college} wants to register as a society under your guidance. Description: ${extraData.societyDescription || 'No description provided.'}`,
+        read: false,
+        createdAt: new Date().toISOString(),
+        // Extra data for the approval action
+        societyUserId: res.user.uid,
+        societyName: name,
+        societyEmail: email,
+        societyCollege: college,
+        societyDescription: extraData.societyDescription || '',
+      };
+      await saveNotification(notif);
+    }
+
     return res.user;
   };
 
@@ -102,10 +160,59 @@ export function AuthProvider({ children }) {
   const completeProfile = async (uid, data) => {
     if (!isConfigured || !db) throw new Error("Firebase not configured.");
     const userDocRef = doc(db, "users", uid);
-    await setDoc(userDocRef, { ...data, createdAt: new Date().toISOString() }, { merge: true });
+    
+    const profileData = { ...data, createdAt: new Date().toISOString() };
+    
+    // If completing as society, mark as pending
+    if (data.role === ROLES.SOCIETY) {
+      profileData.status = SOCIETY_STATUS.PENDING;
+    } else {
+      profileData.status = 'approved';
+    }
+    
+    await setDoc(userDocRef, profileData, { merge: true });
+    
     // Update local state
-    setUser(prev => ({ ...prev, ...data, incomplete: false }));
+    const isPending = data.role === ROLES.SOCIETY;
+    setUser(prev => ({ 
+      ...prev, 
+      ...data, 
+      incomplete: false, 
+      pendingApproval: isPending,
+    }));
     if (data.college) setUniversity(data.college);
+  };
+
+  /**
+   * Handle society approval/rejection by a faculty member.
+   * Updates the society user's Firestore profile and optionally sends a notification.
+   */
+  const handleSocietyApproval = async (societyUserId, approve, reason = '') => {
+    if (!isConfigured || !db) throw new Error("Firebase not configured.");
+    
+    const newStatus = approve ? SOCIETY_STATUS.APPROVED : SOCIETY_STATUS.REJECTED;
+    
+    await updateUserProfile(societyUserId, { 
+      status: newStatus,
+      approvedAt: approve ? new Date().toISOString() : null,
+      rejectedAt: !approve ? new Date().toISOString() : null,
+      approvalNote: reason,
+      approvedBy: user?.uid || user?.id || 'unknown',
+    });
+
+    // Send notification to the society
+    const notif = {
+      id: `n${Date.now()}`,
+      userId: societyUserId,
+      type: approve ? 'approval' : 'rejection',
+      title: approve ? 'Society Registration Approved! 🎉' : 'Society Registration Rejected',
+      message: approve 
+        ? 'Your society account has been approved by your faculty advisor. You can now log in and access CampusBook!'
+        : `Your society registration was not approved. ${reason ? `Reason: ${reason}` : 'Please contact your faculty advisor for details.'}`,
+      read: false,
+      createdAt: new Date().toISOString(),
+    };
+    await saveNotification(notif);
   };
 
   // Phone Auth Helpers
@@ -135,7 +242,8 @@ export function AuthProvider({ children }) {
       logout,
       completeProfile,
       setupRecaptcha,
-      loginWithPhone
+      loginWithPhone,
+      handleSocietyApproval,
     }}>
       {!loading && children}
     </AuthContext.Provider>

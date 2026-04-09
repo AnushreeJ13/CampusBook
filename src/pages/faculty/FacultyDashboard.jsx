@@ -4,31 +4,30 @@ import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { PROPOSAL_STATUS, STATUS_LABELS } from '../../utils/constants';
 import { generateAISummary } from '../../utils/aiHelpers';
-import { ClipboardCheck, CheckCircle, Clock, FileText, Users, Sparkles, ArrowRight, Calendar, MapPin } from 'lucide-react';
+import { ClipboardCheck, CheckCircle, Clock, FileText, Users, Sparkles, ArrowRight, Calendar, MapPin, Lock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import './FacultyDashboard.css';
 
 export default function FacultyDashboard() {
   const { user } = useAuth();
-  const { proposals } = useProposals();
+  const { proposals, isCurrentReviewer } = useProposals();
   const { venues } = useVenues();
 
-  const assignedProposals = proposals.filter(p =>
-    p.currentReviewer === user.id ||
-    p.currentReviewer === user.uid ||
-    p.currentReviewer === 'u4' ||
-    user.email === 'vijay@gmail.com' ||
-    (user.assignedClubs && user.assignedClubs.includes(p.clubId) &&
-      [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status))
-  );
+  // STRICT: Only proposals where the current user is the assigned reviewer
+  const pendingReview = proposals.filter(p => isCurrentReviewer(p));
 
-  const pendingReview = assignedProposals.filter(p =>
-    [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status)
-  );
+  // Previously reviewed — proposals where the user acted (in actionLog) but is no longer the reviewer
+  const userId = user?.uid || user?.id;
+  const reviewed = proposals.filter(p => {
+    const acted = p.actionLog?.some(entry => entry.reviewerId === userId);
+    return acted && !isCurrentReviewer(p);
+  });
 
-  const reviewed = proposals.filter(p =>
-    p.auditTrail?.some(a => a.by === user.id)
+  // Also count proposals where user appears in auditTrail (for legacy/mock data without actionLog)
+  const legacyReviewed = proposals.filter(p =>
+    p.auditTrail?.some(a => a.by === userId) && !isCurrentReviewer(p)
   );
+  const allReviewed = [...new Map([...reviewed, ...legacyReviewed].map(p => [p.id, p])).values()];
 
   return (
     <div className="faculty-saas-layout">
@@ -65,7 +64,7 @@ export default function FacultyDashboard() {
            <div className="saas-stat-icon emerald"><CheckCircle size={20} /></div>
            <div className="saas-stat-content">
              <p className="saas-stat-label">Events Evaluated</p>
-             <h3 className="saas-stat-value">{reviewed.length}</h3>
+             <h3 className="saas-stat-value">{allReviewed.length}</h3>
            </div>
          </div>
 
@@ -142,6 +141,37 @@ export default function FacultyDashboard() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Previously Reviewed Section */}
+        {allReviewed.length > 0 && (
+          <div style={{ marginTop: 'var(--space-2xl)' }}>
+            <div className="flex items-center gap-sm" style={{ marginBottom: 'var(--space-lg)' }}>
+              <Lock size={16} color="var(--text-tertiary)" />
+              <h2 className="saas-section-title" style={{ fontSize: 'var(--font-base)', color: 'var(--text-secondary)' }}>Previously Reviewed</h2>
+              <span style={{ fontSize: '11px', color: 'var(--text-tertiary)', padding: '2px 8px', background: 'var(--bg-glass)', borderRadius: 'var(--radius-sm)' }}>Read Only</span>
+            </div>
+            <div className="saas-proposal-list">
+              {allReviewed.slice(0, 5).map((proposal) => {
+                const venue = venues.find(v => v.id === proposal.venueId);
+                return (
+                  <div key={proposal.id} className="saas-proposal-card" style={{ opacity: 0.65 }}>
+                    <div className="saas-proposal-body" style={{ padding: 'var(--space-md) var(--space-lg)' }}>
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="saas-proposal-title" style={{ fontSize: 'var(--font-sm)', marginBottom: '2px' }}>{proposal.title}</h3>
+                          <p className="saas-proposal-org" style={{ fontSize: 'var(--font-xs)' }}>{proposal.clubName} · {STATUS_LABELS[proposal.status]}</p>
+                        </div>
+                        <Link to={`/proposals/${proposal.id}`} className="saas-btn-action" style={{ fontSize: 'var(--font-xs)' }}>
+                          View <ArrowRight size={14} />
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </main>
