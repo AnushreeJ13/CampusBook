@@ -1,0 +1,10 @@
+[33m16d9fe8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{0}: reset: moving to HEAD~2
+[33mc6de61c[m HEAD@{1}: reset: moving to HEAD~1
+[33mceffee0[m HEAD@{2}: commit: removed .env from tracking
+[33mc6de61c[m HEAD@{3}: commit: events approval shown in whatsapp catalogue
+[33mf6db67a[m HEAD@{4}: commit: whatsapp feature working- society - approval, denial faculty- changes, new recieve, student- events
+[33m16d9fe8[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m HEAD@{5}: pull: Fast-forward
+[33me5769d8[m HEAD@{6}: pull: Fast-forward
+[33m08034a2[m HEAD@{7}: commit: changes made on proposal dates and proposal is synced on both society and faculty
+[33m5cd34d1[m HEAD@{8}: checkout: moving from main to main
+[33m5cd34d1[m HEAD@{9}: clone: from https://github.com/AnushreeJ13/CampusBook

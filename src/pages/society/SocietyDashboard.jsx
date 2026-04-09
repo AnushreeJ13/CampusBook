@@ -4,6 +4,7 @@ import { useVenues } from '../../contexts/VenueContext';
 import { PROPOSAL_STATUS } from '../../utils/constants';
 import { PlusCircle, FileText, CheckCircle, Clock, AlertTriangle, Sparkles, TrendingUp, Zap, Calendar, ChevronRight, QrCode } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import WhatsAppWidget from '../../components/common/WhatsAppWidget';
 import './SocietyDashboard.css';
 
 export default function SocietyDashboard() {
@@ -49,6 +50,9 @@ export default function SocietyDashboard() {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Notification Banner */}
+      <WhatsAppWidget />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'}}>
         {/* Intelligence Highlights */}
