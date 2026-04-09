@@ -21,6 +21,11 @@ import ProposalsList from './pages/ProposalsList';
 import PendingReviews from './pages/PendingReviews';
 import Notifications from './pages/Notifications';
 import Profile from './pages/Profile';
+import CampusTwin from './pages/CampusTwin';
+import Timetable from './pages/Timetable';
+import GraphInsights from './pages/GraphInsights';
+import AttendanceLoop from './pages/AttendanceLoop';
+import CampusChat from './pages/CampusChat';
 
 function ProtectedRoute({ children, allowedRoles }) {
   const { user } = useAuth();
@@ -45,7 +50,7 @@ function AppLayout() {
   const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  if (!user) {
+  if (!user || user.incomplete) {
     return (
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -77,6 +82,13 @@ function AppLayout() {
           {/* Admin */}
           <Route path="/analytics" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/audit" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><AuditLog /></ProtectedRoute>} />
+
+          {/* CampusOS Intelligence */}
+          <Route path="/campus-twin" element={<ProtectedRoute allowedRoles={[ROLES.STUDENT, ROLES.FACULTY]}><CampusTwin /></ProtectedRoute>} />
+          <Route path="/timetable" element={<ProtectedRoute allowedRoles={[ROLES.FACULTY]}><Timetable /></ProtectedRoute>} />
+          <Route path="/graph-insights" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><GraphInsights /></ProtectedRoute>} />
+          <Route path="/attendance" element={<ProtectedRoute allowedRoles={[ROLES.SOCIETY, ROLES.ADMIN]}><AttendanceLoop /></ProtectedRoute>} />
+          <Route path="/campus-chat" element={<ProtectedRoute><CampusChat /></ProtectedRoute>} />
 
           {/* Shared */}
           <Route path="/events" element={<ProtectedRoute><BrowseVenues /></ProtectedRoute>} />

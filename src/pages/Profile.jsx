@@ -14,7 +14,7 @@ export default function Profile() {
             <div style={{fontSize: '4rem'}}>{user.avatar}</div>
             <div>
                <h1 style={{fontSize: 'var(--font-3xl)', fontWeight: 800, color: 'var(--text-primary)'}}>{user.displayName || user.name || 'User'}</h1>
-               <span className={`badge badge-accent`}>{user.role.toUpperCase()}</span>
+               <span className={`badge badge-accent`}>{user.role?.toUpperCase() || 'PROFILE INCOMPLETE'}</span>
             </div>
          </div>
 

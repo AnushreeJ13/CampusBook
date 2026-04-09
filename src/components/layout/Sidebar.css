@@ -53,6 +53,14 @@ body.role-society .sidebar { background: linear-gradient(180deg, var(--bg-primar
   letter-spacing: -0.3px;
 }
 
+.sidebar-tagline {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  margin-top: -2px;
+}
+
 .sidebar-role-tag {
   font-size: 0.6rem;
   color: var(--accent);

@@ -1189,3 +1189,80 @@ select.input-field {
 .action-indicator.delete { background: var(--status-error-soft); color: var(--status-error); }
 .action-indicator.info { background: var(--status-info-soft); color: var(--status-info); }
 
+/* ============================================
+   CAMPUSOS — ANIMATION KEYFRAMES & UTILITIES
+   ============================================ */
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes cardEntrance {
+  from { opacity: 0; transform: translateY(16px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+@keyframes livePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+
+/* Utility Classes */
+.animate-fade-in { animation: fadeIn 0.4s ease; }
+
+.animate-card-entrance { animation: cardEntrance 0.5s ease both; }
+.animate-card-entrance.stagger-1 { animation-delay: 0.05s; }
+.animate-card-entrance.stagger-2 { animation-delay: 0.1s; }
+.animate-card-entrance.stagger-3 { animation-delay: 0.15s; }
+.animate-card-entrance.stagger-4 { animation-delay: 0.2s; }
+.animate-card-entrance.stagger-5 { animation-delay: 0.25s; }
+.animate-card-entrance.stagger-6 { animation-delay: 0.3s; }
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #22c55e;
+  display: inline-block;
+  animation: livePulse 2s ease-in-out infinite;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Flex utilities */
+.flex { display: flex; }
+.items-center { align-items: center; }
+.gap-sm { gap: var(--space-sm); }
+.gap-md { gap: var(--space-md); }
+.gap-lg { gap: var(--space-lg); }
+.justify-between { justify-content: space-between; }
+.flex-wrap { flex-wrap: wrap; }
+

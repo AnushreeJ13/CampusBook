@@ -215,6 +215,7 @@ export default function Login() {
                         <option value={ROLES.STUDENT}>Student</option>
                         <option value={ROLES.SOCIETY}>Society Member</option>
                         <option value={ROLES.FACULTY}>Faculty Advisor</option>
+                        <option value={ROLES.ADMIN}>Admin</option>
                       </select>
                     </div>
                   </>

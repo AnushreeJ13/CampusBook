@@ -5,7 +5,8 @@ import { ROLES } from '../../utils/constants';
 import {
   LayoutDashboard, MapPin, FileText, PlusCircle, ClipboardCheck,
   Bell, BarChart3, Users, ScrollText, Settings, LogOut, Eye,
-  Building2, ChevronLeft, ChevronRight, RefreshCw, Sparkles, X
+  Building2, ChevronLeft, ChevronRight, RefreshCw, Sparkles, X,
+  Map, Calendar, Shield, QrCode, MessageCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import './Sidebar.css';
@@ -13,28 +14,36 @@ import './Sidebar.css';
 const MENU_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
     { to: '/venues', icon: MapPin, label: 'Browse Venues' },
     { to: '/events', icon: Eye, label: 'Upcoming Events' },
+    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/proposals/new', icon: PlusCircle, label: 'New Proposal' },
     { to: '/proposals', icon: FileText, label: 'My Proposals' },
+    { to: '/attendance', icon: QrCode, label: 'Attendance' },
     { to: '/venues', icon: MapPin, label: 'Browse Venues' },
+    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.FACULTY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
+    { to: '/campus-twin', icon: Map, label: 'Campus Twin' },
+    { to: '/timetable', icon: Calendar, label: 'Timetable AI' },
     { to: '/reviews', icon: ClipboardCheck, label: 'Pending Reviews' },
     { to: '/proposals', icon: FileText, label: 'All Proposals' },
+    { to: '/campus-chat', icon: MessageCircle, label: 'Campus Chat' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/venues/manage', icon: Building2, label: 'Manage Venues' },
     { to: '/reviews', icon: ClipboardCheck, label: 'Pending Approvals' },
     { to: '/proposals', icon: FileText, label: 'All Proposals' },
+    { to: '/venues/manage', icon: Building2, label: 'Manage Venues' },
+    { to: '/graph-insights', icon: Shield, label: 'Graph Insights' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
     { to: '/audit', icon: ScrollText, label: 'Audit Log' },
     { to: '/notifications', icon: Bell, label: 'Notifications' },
@@ -75,6 +84,7 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
           {!collapsed && (
             <div className="sidebar-logo-text">
               <span className="sidebar-brand">CampusBook</span>
+              <span className="sidebar-tagline">Intelligence Platform</span>
               <span className="sidebar-role-tag">{user.role}</span>
             </div>
           )}
