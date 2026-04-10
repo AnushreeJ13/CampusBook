@@ -13,20 +13,24 @@ const PORT = process.env.PORT || 5001;
 const envPath = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
-    envContent.split('\n').forEach(line => {
-        const [key, ...value] = line.split('=');
-        if (key && value) {
-            process.env[key.trim()] = value.join('=').trim();
+    envContent.split(/\r?\n/).forEach(line => {
+        const trimmedLine = line.trim();
+        if (!trimmedLine || trimmedLine.startsWith('#')) return;
+        
+        const [key, ...valueParts] = trimmedLine.split('=');
+        if (key && valueParts.length > 0) {
+            process.env[key.trim()] = valueParts.join('=').trim();
         }
     });
 }
 
 // Supabase client initialization
+// For server-side operations, we MUST use the Service Role Key if available to bypass RLS when needed
 const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY;
 
 if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing from .env/.env.local');
+    console.error('❌ SUPABASE_URL or AUTH credentials missing from .env/.env.local');
     process.exit(1);
 }
 
