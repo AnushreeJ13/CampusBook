@@ -6,6 +6,7 @@ import { PROPOSAL_STATUS, STATUS_LABELS } from '../../utils/constants';
 import { generateAISummary } from '../../utils/aiHelpers';
 import { ClipboardCheck, CheckCircle, Clock, FileText, Users, Sparkles, ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import WhatsAppWidget from '../../components/common/WhatsAppWidget';
 import './FacultyDashboard.css';
 
 export default function FacultyDashboard() {
@@ -13,14 +14,22 @@ export default function FacultyDashboard() {
   const { proposals } = useProposals();
   const { venues } = useVenues();
 
-  const assignedProposals = proposals.filter(p =>
-    p.currentReviewer === user.id ||
-    p.currentReviewer === user.uid ||
-    p.currentReviewer === 'u4' ||
-    user.email === 'vijay@gmail.com' ||
-    (user.assignedClubs && user.assignedClubs.includes(p.clubId) &&
-      [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status))
-  );
+  const assignedProposals = proposals.filter(p => {
+    if (user.email === 'vijay@gmail.com') {
+      return [
+        PROPOSAL_STATUS.SUBMITTED, 
+        PROPOSAL_STATUS.FACULTY_REVIEW, 
+        PROPOSAL_STATUS.HOD_REVIEW, 
+        PROPOSAL_STATUS.ADMIN_REVIEW,
+        PROPOSAL_STATUS.REVISION_REQUESTED
+      ].includes(p.status);
+    }
+    return p.currentReviewer === user.id ||
+      p.currentReviewer === user.uid ||
+      p.currentReviewer === 'u4' ||
+      (user.assignedClubs && user.assignedClubs.includes(p.clubId) &&
+        [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status));
+  });
 
   const pendingReview = assignedProposals.filter(p =>
     [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status)
@@ -49,6 +58,9 @@ export default function FacultyDashboard() {
           </div>
         </div>
       </header>
+
+      {/* WhatsApp Notification Banner */}
+      <WhatsAppWidget />
 
       {/* Stats Board */}
       <div className="faculty-saas-stats animate-fade-in" style={{ animationDelay: '0.1s' }}>

@@ -4,11 +4,17 @@ import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { PROPOSAL_STATUS } from '../../utils/constants';
+<<<<<<< HEAD
 import { rankEvents } from '../../utils/recommendationEngine';
 import { 
   Calendar, MapPin, TrendingUp, Cpu, Map, Clock, 
   ArrowRight, Activity, Zap, Shield, Sparkles, Target, AlertCircle, Bookmark, BookmarkCheck
 } from 'lucide-react';
+=======
+import WhatsAppWidget from '../../components/common/WhatsAppWidget';
+import { getAIRecommendations } from '../../utils/mlRecommender';
+import { Calendar, MapPin, TrendingUp, Cpu, Map, Clock, ArrowRight, Activity, Zap } from 'lucide-react';
+>>>>>>> 1bac6ff (whatsapp feature)
 import { Link } from 'react-router-dom';
 import IntelligenceTicker from '../../components/intelligence/IntelligenceTicker';
 import EventRecommendations from '../../components/intelligence/EventRecommendations';
@@ -62,6 +68,7 @@ export default function StudentDashboard() {
         </div>
       </div>
 
+<<<<<<< HEAD
       <div className="dashboard-content-inner">
         {/* Campus Insights Grid */}
         <div className="student-stats-grid">
@@ -71,6 +78,16 @@ export default function StudentDashboard() {
               <span className="student-stat-value">{profile?.interests?.length || 0}</span>
               <span className="student-stat-label">Active Interest Domains</span>
             </div>
+=======
+      {/* WhatsApp Notification Banner */}
+      <WhatsAppWidget />
+
+      {/* Stats - Clean SaaS Layout like Society */}
+      <div className="student-stats-grid">
+        <Link to="/events" className="student-stat stagger-1">
+          <div className="student-stat-icon" style={{background: '#eff6ff', color: '#3b82f6'}}>
+            <Calendar size={24} strokeWidth={2.5} />
+>>>>>>> 1bac6ff (whatsapp feature)
           </div>
 
           <div className="student-stat">
@@ -223,6 +240,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

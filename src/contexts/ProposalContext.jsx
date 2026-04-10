@@ -1,16 +1,21 @@
+<<<<<<< HEAD
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
+=======
+import { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import { MOCK_PROPOSALS } from '../utils/mockData';
+>>>>>>> 1bac6ff (whatsapp feature)
 import { PROPOSAL_STATUS } from '../utils/constants';
 import localEvents from '../data/events.json';
 import { 
-  saveProposal, 
-  saveNotification, 
-  saveBooking, 
-  saveBookingHistory,
-  markNotifRead, 
+  submitProposalToBackend, 
+  updateProposalToBackend,
   subscribeToCollection 
 } from '../api';
 import { useAuth } from './AuthContext';
+<<<<<<< HEAD
 import { sendStatusEmail } from '../utils/mailer';
+=======
+>>>>>>> 1bac6ff (whatsapp feature)
 
 const ProposalContext = createContext(null);
 
@@ -20,13 +25,17 @@ export function ProposalProvider({ children }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const userCollegeId = user?.college?.toLowerCase().replace(/\s+/g, '_');
+  const collegeId = selectedCollege?.id || userCollegeId;
+
   // -- REAL-TIME SUBSCRIPTIONS --
   useEffect(() => {
-    if (!user || !selectedCollege) {
+    if (!user || !collegeId) {
       setLoading(false);
       return;
     }
 
+<<<<<<< HEAD
     const collegeId = selectedCollege?.id;
     if (!collegeId) {
       setLoading(false);
@@ -44,6 +53,45 @@ export function ProposalProvider({ children }) {
     const unsubBookings = subscribeToCollection('bookings', (data) => {
         const combined = data.filter(b => b.collegeId === collegeId || !b.collegeId);
         setBookings(combined);
+=======
+    const unsubProposals = subscribeToCollection('proposals', (data) => {
+        // Filter by college_id (handles both camelCase and snake_case from DB)
+        let cloudData = data.filter(p => 
+          p.collegeId === collegeId || 
+          p.college_id === collegeId
+        );
+        
+        // Merge with Mock Data
+        let combined = [...cloudData];
+        MOCK_PROPOSALS.forEach(mock => {
+           if (mock.collegeId === collegeId && !combined.find(d => d.id === mock.id)) {
+             combined.push(mock);
+           }
+        });
+
+        // Merge with Local Drafts
+        try {
+            const saved = localStorage.getItem(`campusos_drafts_${collegeId}`);
+            if (saved) {
+                const drafts = JSON.parse(saved);
+                drafts.forEach(d => {
+                    if (!combined.find(p => p.id === d.id)) combined.unshift(d);
+                });
+            }
+        } catch(e) {}
+
+        setProposals(combined);
+    });
+
+    const unsubNotifs = subscribeToCollection('notifications', (data) => {
+        const filtered = data.filter(n => n.userId === user.id || n.user_id === user.id);
+        setNotifications(filtered);
+    });
+
+    const unsubBookings = subscribeToCollection('bookings', (data) => {
+        const cloudBookings = data.filter(b => b.collegeId === collegeId || b.college_id === collegeId);
+        setBookings(cloudBookings);
+>>>>>>> 1bac6ff (whatsapp feature)
         setLoading(false);
     });
 
@@ -51,8 +99,9 @@ export function ProposalProvider({ children }) {
         unsubProposals();
         unsubBookings();
     };
-  }, [user, selectedCollege]);
+  }, [user, collegeId]);
 
+<<<<<<< HEAD
   // -- MOCK DATA BRIDGING --
   const normalizedMockSignals = useMemo(() => {
     return localEvents.map(event => {
@@ -119,37 +168,54 @@ export function ProposalProvider({ children }) {
         collegeId: selectedCollege?.id,
         read: false, 
         createdAt: new Date().toISOString() 
+=======
+  const addNotification = useCallback(async (notif) => {
+    const newNotif = {
+        ...notif,
+        id: `n${Date.now()}`,
+        user_id: notif.userId || user.id,
+        createdAt: new Date().toISOString(),
+        read: false
+>>>>>>> 1bac6ff (whatsapp feature)
     };
-    await saveNotification(newNotif);
-  }, [selectedCollege]);
+    setNotifications(prev => [newNotif, ...prev]);
+  }, [user]);
 
   const submitProposal = useCallback(async (proposal) => {
     const newProposal = {
       ...proposal,
-      id: `p${Date.now()}`,
-      collegeId: selectedCollege?.id,
+      // Send BOTH camelCase and snake_case — the backend's mapToDbSchema will normalize
+      collegeId,
+      college_id: collegeId,
       status: PROPOSAL_STATUS.SUBMITTED,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      submittedBy: user.id || user.uid || 'guest',
-      submittedByName: user.name || user.displayName || 'Unknown User',
-      auditTrail: [
-        { 
-          action: 'created', 
-          by: user.uid || user.id || 'guest', 
-          byName: user.displayName || user.name || 'Unknown User', 
-          at: new Date().toISOString(), 
-          note: 'Proposal created and submitted' 
-        },
-      ],
+      submittedBy: user.id || user.uid,
+      submitted_by: user.id || user.uid,
+      submittedByName: user.name || user.displayName || 'User',
+      submitted_by_name: user.name || user.displayName || 'User',
+      auditTrail: [{ action: 'created', by: user.id, byName: user.name || user.displayName, at: new Date().toISOString(), note: 'Proposal created and submitted' }],
     };
     
+<<<<<<< HEAD
     // Optimistically update
     setProposals(prev => [newProposal, ...prev]);
+=======
+    // Optimistic UI with temp ID
+    const tempId = `temp_${Date.now()}`;
+    const optimistic = { ...newProposal, id: tempId };
+    setProposals(prev => [optimistic, ...prev]);
+>>>>>>> 1bac6ff (whatsapp feature)
 
     try {
-      await saveProposal(newProposal);
+      const saved = await submitProposalToBackend(newProposal);
+      if (saved && saved.id) {
+          // Replace temp with real data from backend
+          setProposals(prev => prev.map(p => p.id === tempId ? { ...saved, ...newProposal, id: saved.id } : p));
+          return saved;
+      }
     } catch(e) {
+<<<<<<< HEAD
       console.error("Supabase write failed:", e);
     }
     
@@ -164,91 +230,75 @@ export function ProposalProvider({ children }) {
     
     return newProposal;
   }, [user, addNotification, selectedCollege]);
+=======
+      console.error("Backend save failed:", e.message);
+      // Save as local draft on failure
+      try {
+        const key = `campusos_drafts_${collegeId}`;
+        const existing = JSON.parse(localStorage.getItem(key) || '[]');
+        existing.push(optimistic);
+        localStorage.setItem(key, JSON.stringify(existing));
+      } catch(se) {}
+    }
+    return optimistic;
+  }, [user, collegeId]);
+>>>>>>> 1bac6ff (whatsapp feature)
 
-  const updateProposalStatus = useCallback(async (proposalId, newStatus, reviewerId, reviewerName, note, nextReviewer) => {
+  const updateProposalStatus = useCallback(async (proposalId, newStatus, reviewerId, reviewerName, note, extraFields = {}) => {
     const proposal = proposals.find(p => p.id === proposalId);
     if (!proposal) return;
 
-    const auditEntry = {
-      action: newStatus === PROPOSAL_STATUS.APPROVED ? 'approved'
-        : newStatus === PROPOSAL_STATUS.REJECTED ? 'rejected'
-        : newStatus === PROPOSAL_STATUS.REVISION_REQUESTED ? 'revision_requested'
-        : 'status_changed',
-      by: reviewerId,
-      byName: reviewerName,
-      at: new Date().toISOString(),
-      note: note || `Status changed to ${newStatus}`,
-    };
-
-    const updatedProposal = {
-      ...proposal,
+    const updates = {
       status: newStatus,
-      currentReviewer: nextReviewer || null,
       updatedAt: new Date().toISOString(),
-      auditTrail: [...(proposal.auditTrail || []), auditEntry],
+      auditTrail: [...(proposal.auditTrail || proposal.audit_trail || []), { action: 'status_changed', by: reviewerId, byName: reviewerName, at: new Date().toISOString(), note }],
+      ...extraFields,
     };
 
+<<<<<<< HEAD
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+=======
+    // Optimistic update
+    setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, ...updates } : p));
+>>>>>>> 1bac6ff (whatsapp feature)
 
     try {
-      await saveProposal(updatedProposal);
-    } catch(e) {}
-
-    // Notifications
-    const notifType = newStatus === PROPOSAL_STATUS.APPROVED ? 'approval'
-      : newStatus === PROPOSAL_STATUS.REJECTED ? 'rejection'
-      : 'revision';
-    
-    addNotification({
-      userId: proposal.submittedBy,
-      type: notifType,
-      title: newStatus === PROPOSAL_STATUS.APPROVED ? 'Proposal Approved!' :
-             newStatus === PROPOSAL_STATUS.REJECTED ? 'Proposal Rejected' : 'Revision Requested',
-      message: `"${proposal.title}" — ${note || `Status updated to ${newStatus}`}`,
-      proposalId,
-    });
-
-    // Email dispatch (simulation if service not ready)
-    if (newStatus === PROPOSAL_STATUS.APPROVED || newStatus === PROPOSAL_STATUS.REJECTED) {
-       sendStatusEmail(proposal.title, newStatus, "society@university.edu", "Society Team");
-       
-       // Log to booking history
-       saveBookingHistory({
-         venueId: proposal.venueId,
-         eventType: proposal.eventType,
-         status: newStatus === PROPOSAL_STATUS.APPROVED ? 'approved' : 'rejected'
-       });
+      await updateProposalToBackend(proposalId, updates);
+    } catch(e) {
+      console.error("Update failed:", e.message);
     }
-  }, [proposals, addNotification]);
+  }, [proposals]);
 
   const approveAndForward = useCallback(async (proposalId, reviewerId, reviewerName, note, nextStatus, nextReviewer) => {
     const proposal = proposals.find(p => p.id === proposalId);
     if (!proposal) return;
 
-    const auditEntries = [
-      { action: 'approved', by: reviewerId, byName: reviewerName, at: new Date().toISOString(), note: note || 'Approved' },
-      { action: 'forwarded', by: reviewerId, byName: reviewerName, at: new Date().toISOString(), note: `Forwarded to next authority` },
-    ];
-
-    const updatedProposal = {
-      ...proposal,
+    const updates = {
       status: nextStatus,
       currentReviewer: nextReviewer,
+      current_reviewer: nextReviewer,
       updatedAt: new Date().toISOString(),
-      auditTrail: [...(proposal.auditTrail || []), ...auditEntries],
+      auditTrail: [...(proposal.auditTrail || proposal.audit_trail || []), { action: 'forwarded', by: reviewerId, byName: reviewerName, at: new Date().toISOString(), note }],
     };
 
+<<<<<<< HEAD
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
+=======
+    setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, ...updates } : p));
+>>>>>>> 1bac6ff (whatsapp feature)
 
     try {
-      await saveProposal(updatedProposal);
-    } catch(e) {}
+      await updateProposalToBackend(proposalId, updates);
+    } catch(e) {
+      console.error("Forward failed:", e.message);
+    }
   }, [proposals]);
 
   const bookVenue = useCallback(async (proposalId) => {
     const proposal = proposals.find(p => p.id === proposalId);
     if (!proposal) return;
 
+<<<<<<< HEAD
     const newBooking = {
       id: `b${Date.now()}`,
       venueId: proposal.venueId,
@@ -263,17 +313,15 @@ export function ProposalProvider({ children }) {
 
     const updatedProposal = {
       ...proposal,
+=======
+    const updates = {
+>>>>>>> 1bac6ff (whatsapp feature)
       status: PROPOSAL_STATUS.VENUE_BOOKED,
       updatedAt: new Date().toISOString(),
-      auditTrail: [...(proposal.auditTrail || []), {
-        action: 'venue_booked',
-        by: 'system',
-        byName: 'System',
-        at: new Date().toISOString(),
-        note: 'Venue automatically booked upon final approval',
-      }],
+      auditTrail: [...(proposal.auditTrail || proposal.audit_trail || []), { action: 'venue_booked', by: 'system', byName: 'System', at: new Date().toISOString(), note: 'Venue successfully booked' }],
     };
 
+<<<<<<< HEAD
     setProposals(prev => prev.map(p => p.id === proposalId ? updatedProposal : p));
 
     try {
@@ -295,6 +343,19 @@ export function ProposalProvider({ children }) {
 
   const resetData = useCallback(() => {
     console.log("Resetting data...");
+=======
+    setProposals(prev => prev.map(p => p.id === proposalId ? { ...p, ...updates } : p));
+    
+    try {
+       await updateProposalToBackend(proposalId, updates);
+    } catch(e) {
+      console.error("Book venue failed:", e.message);
+    }
+  }, [proposals]);
+
+  const markNotificationRead = useCallback(async (notifId) => {
+     setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
+>>>>>>> 1bac6ff (whatsapp feature)
   }, []);
 
   return (
@@ -305,10 +366,9 @@ export function ProposalProvider({ children }) {
       submitProposal,
       updateProposalStatus,
       approveAndForward,
+      addNotification,
       bookVenue,
       markNotificationRead,
-      addNotification,
-      resetData,
     }}>
       {children}
     </ProposalContext.Provider>
@@ -317,7 +377,6 @@ export function ProposalProvider({ children }) {
 
 export function useProposals() {
   const ctx = useContext(ProposalContext);
-  if (!ctx) throw new Error('useProposals must be used within ProposalProvider');
   return ctx;
 }
 

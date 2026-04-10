@@ -11,18 +11,30 @@ export default function PendingReviews() {
   const { proposals } = useProposals();
   const { venues } = useVenues();
 
+  const adminPending = proposals.filter(p => [PROPOSAL_STATUS.ADMIN_REVIEW, PROPOSAL_STATUS.HOD_REVIEW].includes(p.status));
+
   const pendingForMe = proposals.filter(p => {
-    if (user.role === ROLES.FACULTY || user.email === 'vijay@gmail.com') {
+    // Special Super-user visibility for vijay@gmail.com (Sees EVERYTHING)
+    if (user.email === 'vijay@gmail.com') {
+      return [
+        PROPOSAL_STATUS.SUBMITTED, 
+        PROPOSAL_STATUS.FACULTY_REVIEW, 
+        PROPOSAL_STATUS.HOD_REVIEW, 
+        PROPOSAL_STATUS.ADMIN_REVIEW,
+        PROPOSAL_STATUS.REVISION_REQUESTED
+      ].includes(p.status);
+    }
+
+    if (user.role === ROLES.FACULTY) {
       return p.currentReviewer === user.id ||
         p.currentReviewer === user.uid ||
         p.currentReviewer === 'u4' ||
-        user.email === 'vijay@gmail.com' ||
         (user.assignedClubs?.includes(p.clubId) &&
           [PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.SUBMITTED].includes(p.status));
     }
     if (user.role === ROLES.ADMIN) {
-      return p.status === PROPOSAL_STATUS.ADMIN_REVIEW ||
-        (p.currentReviewer === user.id && [PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW].includes(p.status));
+      return [PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW].includes(p.status) ||
+        p.currentReviewer === user.id || p.currentReviewer === user.uid;
     }
     return false;
   });

@@ -6,6 +6,7 @@ import { BarChart3, Building2, FileText, CheckCircle, Clock, Shield, ArrowRight 
 import { useNavigate, Link } from 'react-router-dom';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import './AdminDashboard.css';
+import WhatsAppWidget from '../../components/common/WhatsAppWidget';
 
 const CHART_COLORS = ['#8B5CF6', '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#EC4899'];
 
@@ -17,7 +18,7 @@ export default function AdminDashboard() {
 
   const approved = proposals.filter(p => [PROPOSAL_STATUS.APPROVED, PROPOSAL_STATUS.VENUE_BOOKED].includes(p.status));
   const pending = proposals.filter(p => [PROPOSAL_STATUS.SUBMITTED, PROPOSAL_STATUS.FACULTY_REVIEW, PROPOSAL_STATUS.HOD_REVIEW, PROPOSAL_STATUS.ADMIN_REVIEW].includes(p.status));
-  const adminPending = proposals.filter(p => p.status === PROPOSAL_STATUS.ADMIN_REVIEW);
+  const adminPending = proposals.filter(p => [PROPOSAL_STATUS.ADMIN_REVIEW, PROPOSAL_STATUS.HOD_REVIEW].includes(p.status));
 
   // Event types distribution
   const typeCount = {};
@@ -50,6 +51,9 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* WhatsApp Notification Banner */}
+      <WhatsAppWidget />
 
       {/* Stats */}
       <div className="admin-stats-grid">

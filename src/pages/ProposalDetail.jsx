@@ -42,12 +42,13 @@ export default function ProposalDetail() {
     ((user.role === ROLES.FACULTY) &&
       (proposal.currentReviewer === user.id || proposal.currentReviewer === user.uid || proposal.currentReviewer === 'u4' || user.assignedClubs?.includes(proposal.clubId)));
       
-  const isAdmin = user.role === ROLES.ADMIN || user.email === 'admin@gmail.com';
+  const isAdmin = user.role === ROLES.ADMIN || user.email === 'vijay@gmail.com';
 
   const handleApprove = () => {
-    if (user.role === ROLES.FACULTY || user.email === 'vijay@gmail.com') {
+    // If it's early stage, forward it. If it's later stage (HOD/Admin), finish it.
+    if (!isAdmin || proposal.status === PROPOSAL_STATUS.SUBMITTED || proposal.status === PROPOSAL_STATUS.FACULTY_REVIEW) {
       approveAndForward(proposal.id, user.id, user.name, comment || 'Approved by Faculty Advisor', PROPOSAL_STATUS.HOD_REVIEW, 'u6');
-    } else if (isAdmin) {
+    } else {
       updateProposalStatus(proposal.id, PROPOSAL_STATUS.APPROVED, user.id, user.name, comment || 'Final approval granted');
       setTimeout(() => bookVenue(proposal.id), 500);
     }
@@ -56,13 +57,18 @@ export default function ProposalDetail() {
   };
 
   const handleReject = () => {
-    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REJECTED, user.id, user.name, comment || 'Rejected');
+    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REJECTED, user.id, user.name, comment || 'Rejected', {
+      rejectionReason: comment || 'Rejected by reviewer',
+      rejection_reason: comment || 'Rejected by reviewer',
+    });
     setShowActions(false);
     setComment('');
   };
 
   const handleRevision = () => {
-    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REVISION_REQUESTED, user.id, user.name, comment || 'Changes requested');
+    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REVISION_REQUESTED, user.id, user.name, comment || 'Changes requested', {
+      feedback: comment || 'Please revise and resubmit',
+    });
     setShowActions(false);
     setComment('');
   };
