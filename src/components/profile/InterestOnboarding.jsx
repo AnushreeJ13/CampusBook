@@ -17,7 +17,7 @@ const SKILLS = [
   'Graphic Design', 'Data Analysis', 'Cybersecurity'
 ];
 
-export default function InterestOnboarding() {
+export default function InterestOnboarding({ onComplete }) {
   const { updateProfile } = useProfile();
   const [step, setStep] = useState(1);
   const [selectedInterests, setSelectedInterests] = useState([]);
@@ -42,8 +42,10 @@ export default function InterestOnboarding() {
         skills: selectedSkills,
         onboardingComplete: true
       });
+      if (onComplete) onComplete();
     } catch (err) {
       console.warn('Failed to update profile remotely. Bypassing onboarding for session.', err);
+      if (onComplete) onComplete();
     }
   };
 

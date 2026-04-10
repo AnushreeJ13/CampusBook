@@ -55,7 +55,7 @@ export default function TopBar({ onMobileMenuToggle }) {
         </button>
         
         <div className="topbar-university hidden-m">
-          FORENSIC TERMINAL [UNIFLOW]
+          {user?.role === 'student' ? 'CAMPUS HUB [UNIFLOW]' : 'FORENSIC TERMINAL [UNIFLOW]'}
         </div>
 
         {user?.incomplete && (
@@ -66,18 +66,33 @@ export default function TopBar({ onMobileMenuToggle }) {
         )}
 		
         <div className="system-status-pills">
-          <div className="status-pill">
-            <div className="indicator pulse"></div>
-            SYSTEM_UPTIME: 99.9%
-          </div>
-          <div className="status-pill">
-            <div className="indicator" style={{background: 'var(--accent)', boxShadow: '0 0 5px var(--accent)'}}></div>
-            NEURAL_SYNC: ACTIVE
-          </div>
-          <div className="status-pill">
-            <Activity size={10} style={{ color: 'var(--status-warning)' }} />
-            LATENCY: 14MS
-          </div>
+          {user?.role === 'student' ? (
+            <>
+              <div className="status-pill">
+                <div className="indicator pulse"></div>
+                CAMPUS_PULSE: LIVE
+              </div>
+              <div className="status-pill">
+                <div className="indicator" style={{background: 'var(--accent)', boxShadow: '0 0 5px var(--accent)'}}></div>
+                COMMUNITY: ACTIVE
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="status-pill">
+                <div className="indicator pulse"></div>
+                SYSTEM_UPTIME: 99.9%
+              </div>
+              <div className="status-pill">
+                <div className="indicator" style={{background: 'var(--accent)', boxShadow: '0 0 5px var(--accent)'}}></div>
+                NEURAL_SYNC: ACTIVE
+              </div>
+              <div className="status-pill">
+                <Activity size={10} style={{ color: 'var(--status-warning)' }} />
+                LATENCY: 14MS
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -125,7 +140,7 @@ export default function TopBar({ onMobileMenuToggle }) {
                 onClick={handleLogout}
                 className="user-dropdown-item logout-item"
               >
-                <LogOut size={14} /> Close Terminal
+                <LogOut size={14} /> {user?.role === 'student' ? 'Log Out' : 'Close Terminal'}
               </button>
             </div>
           )}

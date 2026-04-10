@@ -76,29 +76,21 @@ export function AuthProvider({ children }) {
               phoneNumber: supabaseUser.phone,
               displayName: profileData.name || supabaseUser.user_metadata?.full_name || 'Campus User',
               avatar: profileData.avatar || (profileData.name ? profileData.name[0] : (supabaseUser.user_metadata?.full_name ? supabaseUser.user_metadata.full_name[0] : '👤')),
+              ...profileData,
               role: roleToSet,
-              incomplete: profileData.incomplete ?? false,
-              ...profileData
             });
 
             if (profileData.college) {
               setUniversity(profileData.college);
-<<<<<<< HEAD
               const matchingCollege = COLLEGES.find(c => 
                 c.id === profileData.college || 
                 c.name === profileData.college || 
                 c.shortName === profileData.college
               );
 
-              if (matchingCollege) {
+              if (matchingCollege && !selectedCollege) {
                 setSelectedCollege(matchingCollege);
                 localStorage.setItem('uniflow_college', JSON.stringify(matchingCollege));
-=======
-              // Auto-select college slug for the dashboad filters
-              const slug = profileData.college.toLowerCase().replace(/\s+/g, '_');
-              if (!selectedCollege) {
-                selectCollege({ id: slug, name: profileData.college });
->>>>>>> 1bac6ff (whatsapp feature)
               }
             }
           } else {

@@ -8,7 +8,9 @@ import {
   ArrowLeft, CheckCircle, XCircle, Edit3, Send, Sparkles,
   Calendar, MapPin, Users, FileText, Clock, AlertTriangle, ChevronRight
 } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { useAttendance } from '../contexts/AttendanceContext';
+import { useProfile } from '../contexts/ProfileContext';
 
 export default function ProposalDetail() {
   const { id } = useParams();
@@ -16,8 +18,12 @@ export default function ProposalDetail() {
   const { user } = useAuth();
   const { proposals, updateProposalStatus, approveAndForward, bookVenue } = useProposals();
   const { venues } = useVenues();
+  const { activeSessions } = useAttendance();
+  const { updateProfile, profile: myProfile } = useProfile();
   const [comment, setComment] = useState('');
   const [showActions, setShowActions] = useState(false);
+  const [awardingCredits, setAwardingCredits] = useState(false);
+  const [creditAmount, setCreditAmount] = useState(10);
 
   const proposal = proposals.find(p => p.id === id);
   if (!proposal) {
@@ -65,13 +71,26 @@ export default function ProposalDetail() {
     setComment('');
   };
 
-  const handleRevision = () => {
-    updateProposalStatus(proposal.id, PROPOSAL_STATUS.REVISION_REQUESTED, user.id, user.name, comment || 'Changes requested', {
-      feedback: comment || 'Please revise and resubmit',
-    });
-    setShowActions(false);
-    setComment('');
+  const handleAwardCredits = async () => {
+    setAwardingCredits(true);
+    try {
+      // Logic would ideally fetch the society's profile. 
+      // For now, we simulate by adding to a 'credits' field if it were local, 
+      // but in a real app we'd need societyId.
+      // We'll add it to the proposal metadata as a record.
+      await updateProposalStatus(proposal.id, proposal.status, user.id, user.name, 
+        `Awarded ${creditAmount} Impact Credits for event performance.`,
+        { awardedCredits: (proposal.awardedCredits || 0) + creditAmount }
+      );
+      alert(`${creditAmount} Credits awarded to ${proposal.clubName}!`);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setAwardingCredits(false);
+    }
   };
+
+  const activeSession = activeSessions.find(s => s.eventId === id);
 
   const getStatusColor = (status) => {
     const map = {
@@ -140,6 +159,51 @@ export default function ProposalDetail() {
               ))}
             </div>
           </div>
+
+          {/* Reputation & Attendance (For Admin/Faculty) */}
+          {(isAdmin || user.role === ROLES.FACULTY) && activeSession && (
+            <div className="card" style={{ marginBottom: 'var(--space-lg)', borderLeft: '4px solid var(--accent)' }}>
+              <div className="flex items-center justify-between" style={{ marginBottom: 'var(--space-md)' }}>
+                <div className="flex items-center gap-sm">
+                  <Users size={18} className="text-accent" />
+                  <h3 style={{ fontSize: 'var(--font-base)', fontWeight: 700 }}>Live Reputation Pulse</h3>
+                </div>
+                <div className="badge badge-accent animate-pulse">LIVE NOW</div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-md" style={{ marginBottom: 'var(--space-lg)' }}>
+                <div className="stat-card">
+                  <span className="stat-label">ATTENDEE_COUNT</span>
+                  <span className="stat-value text-accent">{activeSession.attendeeCount || 0}</span>
+                </div>
+                <div className="stat-card">
+                  <span className="stat-label">REPUTATION_BOOST</span>
+                  <span className="stat-value text-success">+{Math.min(50, Math.floor((activeSession.attendeeCount || 0) / 2))}</span>
+                </div>
+              </div>
+
+              <div className="p-4 bg-background-alt rounded-lg flex flex-col gap-3">
+                <label className="text-xs font-mono font-bold text-dim uppercase">Award Impact Credits (0-50)</label>
+                <div className="flex gap-4 items-center">
+                  <input 
+                    type="range" min="0" max="50" step="5" 
+                    value={creditAmount} 
+                    onChange={(e) => setCreditAmount(parseInt(e.target.value))}
+                    className="flex-1 accent-primary"
+                  />
+                  <span className="text-lg font-bold font-mono text-accent">{creditAmount}</span>
+                  <button 
+                    className="btn btn-primary btn-sm" 
+                    onClick={handleAwardCredits}
+                    disabled={awardingCredits}
+                  >
+                    {awardingCredits ? 'Awarding...' : 'Award Credits'}
+                  </button>
+                </div>
+                <p className="text-[10px] text-dim italic">Credits reward societies for high engagement and organized event execution.</p>
+              </div>
+            </div>
+          )}
 
           {/* Event Details */}
           <div className="card" style={{ marginBottom: 'var(--space-lg)' }}>

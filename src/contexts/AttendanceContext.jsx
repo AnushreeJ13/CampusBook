@@ -69,9 +69,12 @@ export function AttendanceProvider({ children }) {
     
     await markAttendance(record);
     
-    // Update session count (simplified, better handled with cloud function or atomic increment)
-    if (session) {
-        await updateAttendanceSession(sessionId, { attendeeCount: (session.attendeeCount || 0) + 1 });
+    // Update session count
+    const sessionToUpdate = activeSessions.find(s => s.id === sessionId);
+    if (sessionToUpdate) {
+        await updateAttendanceSession(sessionId, { 
+          attendeeCount: (sessionToUpdate.attendeeCount || 0) + 1 
+        });
     }
 
     // Update UWAA Telemetry

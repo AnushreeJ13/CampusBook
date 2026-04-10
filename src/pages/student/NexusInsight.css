@@ -190,6 +190,29 @@
   transform: translateX(5px);
 }
 
+.card-scanner-line {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  opacity: 0.6;
+  pointer-events: none;
+  z-index: 5;
+  box-shadow: 0 0 8px var(--accent);
+  animation: scanLoopPulse 3s linear infinite;
+}
+
+@keyframes scanLoopPulse {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 0.8; }
+  90% { opacity: 0.8; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.radar-item:hover .card-scanner-line {
+  animation-duration: 1.5s;
+  opacity: 1;
+}
+
 .item-icon {
   width: 48px;
   height: 48px;
@@ -229,6 +252,11 @@
 .tag-quiet { background: rgba(80, 250, 123, 0.1); color: #50fa7b; }
 .tag-starting { background: rgba(255, 184, 108, 0.1); color: #ffb86c; }
 .tag-critical { background: rgba(189, 147, 249, 0.1); color: #bd93f9; }
+.tag-stable { background: rgba(139, 233, 253, 0.1); color: #8be9fd; }
+.tag-up { background: rgba(80, 250, 123, 0.1); color: #50fa7b; }
+.tag-low { background: rgba(98, 114, 164, 0.1); color: #6272a4; }
+.tag-ongoing { background: rgba(241, 250, 140, 0.1); color: #f1fa8c; }
+.tag-ended { background: rgba(255, 85, 85, 0.1); color: #ff5555; }
 
 .item-label {
   font-size: 0.9rem;

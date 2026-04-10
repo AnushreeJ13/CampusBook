@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { useProfile } from './contexts/ProfileContext';
 import { ProposalProvider } from './contexts/ProposalContext';
 import { VenueProvider } from './contexts/VenueContext';
 import { NotificationProvider } from './contexts/NotificationContext.jsx';
 import { ROLES } from './utils/constants';
+import InterestOnboarding from './components/profile/InterestOnboarding';
 import Sidebar from './components/layout/Sidebar';
 import TopBar from './components/layout/TopBar';
 import BottomNav from './components/layout/BottomNav';
@@ -43,7 +45,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 function DashboardRouter() {
   const { user } = useAuth();
   if (!user) return <Navigate to="/login" replace />;
-  
+
   console.log("DashboardRouter: Routing user", user.id, "with role:", user.role);
 
   switch (user.role) {
@@ -51,7 +53,7 @@ function DashboardRouter() {
     case ROLES.SOCIETY: return <SocietyDashboard />;
     case ROLES.FACULTY: return <FacultyDashboard />;
     case ROLES.ADMIN: return <AdminDashboard />;
-    default: 
+    default:
       console.warn("DashboardRouter: Unknown role, defaulting to Student", user.role);
       return <StudentDashboard />;
   }
@@ -63,6 +65,7 @@ import NexusInsight from './pages/student/NexusInsight';
 
 function AppContent() {
   const { user, loading, selectedCollege, selectCollege } = useAuth();
+  const { profile, loading: profileLoading } = useProfile();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -100,6 +103,20 @@ function AppContent() {
 
   if (!selectedCollege) {
     return <CollegeSelector onSelect={selectCollege} />;
+  }
+
+  // Global Check: Force Interest Onboarding for Students across all routes
+  const isStudentIntended = user.role === ROLES.STUDENT;
+  const hasNoInterests = !profile?.interests || profile.interests.length === 0;
+  
+  if (isStudentIntended && !profileLoading && hasNoInterests) {
+    return (
+      <div className="app-layout onboarding-takeover">
+        <div className="main-content" style={{ width: '100%', margin: 0, padding: 0 }}>
+             <InterestOnboarding />
+        </div>
+      </div>
+    );
   }
 
   return (

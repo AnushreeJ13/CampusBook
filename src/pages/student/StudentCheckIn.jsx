@@ -104,9 +104,21 @@ export function StudentCheckIn() {
                     </div>
 
                     {attended && (
-                      <div className="mt-4 p-3 bg-primary/10 border border-primary/20 rounded flex items-center gap-3">
-                        <ShieldCheck size={16} className="text-primary" />
-                        <span className="text-xs font-mono text-secondary">ATTENDANCE_CONFIRMED_ID: {Math.random().toString(16).substring(2, 10).toUpperCase()}</span>
+                      <div className="mt-4 p-4 bg-primary/10 border border-primary/30 rounded-lg flex flex-col gap-3">
+                        <div className="flex items-center gap-3">
+                          <ShieldCheck size={20} className="text-primary" />
+                          <span className="text-sm font-bold font-mono text-primary">ATTENDANCE_VERIFIED</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="flex flex-col">
+                            <span className="text-[10px] text-dim font-mono uppercase">Reference_ID</span>
+                            <span className="text-xs font-mono text-secondary">{Math.random().toString(16).substring(2, 12).toUpperCase()}</span>
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-[10px] text-dim font-mono uppercase">Data_Integrity</span>
+                            <span className="text-xs font-mono text-success">SECURE (0.99)</span>
+                          </div>
+                        </div>
                       </div>
                     )}
                   </div>

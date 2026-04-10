@@ -2,8 +2,8 @@ const twilio = require('twilio');
 const { createClient } = require('@supabase/supabase-js');
 const { TEMPLATE_REGISTRY } = require('./whatsappTemplates');
 
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 let twilioClient = null;

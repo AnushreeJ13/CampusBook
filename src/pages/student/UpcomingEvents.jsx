@@ -5,6 +5,7 @@ import { PROPOSAL_STATUS } from '../../utils/constants';
 import { Calendar, MapPin, ChevronRight, Sparkles, Search, Bookmark, Target, Shield } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { Link } from 'react-router-dom';
+import EventRecommendations from '../../components/intelligence/EventRecommendations';
 import './UpcomingEvents.css';
 
 export default function UpcomingEvents() {
@@ -125,26 +126,8 @@ export default function UpcomingEvents() {
       )}
 
       {/* Recommended Section (ML) */}
-      <section className="recommendation-banner">
-         <div className="banner-content">
-            <div className="banner-badge">
-               <Target size={14} />
-               For You
-            </div>
-            <h2 className="banner-title">Personalized Recommendations</h2>
-            <p className="banner-text">
-               Based on your interests and past attendance, these upcoming events are a perfect match for your profile. Go explore and expand your network!
-            </p>
-            
-            <div className="banner-actions">
-               <button className="primary-banner-btn">
-                  View Suggestions
-               </button>
-               <button className="secondary-banner-btn">
-                  Update Profile
-               </button>
-            </div>
-         </div>
+      <section style={{ marginTop: '2rem' }}>
+         <EventRecommendations />
       </section>
     </div>
   );

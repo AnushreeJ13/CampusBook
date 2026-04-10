@@ -58,7 +58,7 @@ function RecommendationCard({ event, index }) {
                 <ScorePill score={socialPeer} label="Popularity" colorClass="score-fill-primary" />
             </div>
 
-            <div className="rec-card-footer">
+            <div className="rec-card-footer z-10">
                 <div className="rec-date">
                     <Calendar size={14} /> {event.date}
                 </div>
@@ -66,6 +66,7 @@ function RecommendationCard({ event, index }) {
                     View Details <ArrowRight size={14} />
                 </div>
             </div>
+            <div className="card-scanner-line" style={{background: 'linear-gradient(90deg, transparent, rgba(99, 102, 241, 0.4), transparent)'}} />
         </Link>
     );
 }
@@ -102,15 +103,24 @@ export default function EventRecommendations() {
                     </h2>
                     <p className="rec-subtitle">Based on your interests and recent engagement</p>
                 </div>
-                
-                <button 
-                    onClick={handleRefresh}
-                    disabled={loading}
-                    className="rec-btn-refresh"
-                >
-                    <Activity size={14} className={loading ? "animate-spin" : ""} />
-                    {loading ? "Updating..." : "Refresh"}
-                </button>
+                <div className="rec-header-actions" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <button 
+                        onClick={() => document.querySelector('.profile-nav-link')?.click() || window.location.assign('/profile')}
+                        className="rec-btn-refresh"
+                        style={{ background: 'rgba(139, 92, 246, 0.1)', color: '#a78bfa', borderColor: 'rgba(139, 92, 246, 0.3)' }}
+                    >
+                        <Sparkles size={14} />
+                        Edit Interests
+                    </button>
+                    <button 
+                        onClick={handleRefresh}
+                        disabled={loading}
+                        className="rec-btn-refresh"
+                    >
+                        <Activity size={14} className={loading ? "animate-spin" : ""} />
+                        {loading ? "Updating..." : "Refresh"}
+                    </button>
+                </div>
             </div>
 
             <div className="rec-grid">

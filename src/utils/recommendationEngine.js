@@ -1,4 +1,4 @@
-import attendanceHistory from '../data/attendance_history.json';
+// Removed static attendanceHistory import
 import { autoCategorizEvent } from './aiHelpers';
 
 /**
@@ -10,51 +10,26 @@ import { autoCategorizEvent } from './aiHelpers';
 
 // Weights for different intelligence vectors
 const WEIGHTS = {
-  INTEREST_MATCH: 0.50,    // Pure match between user interests and event tags
-  SKILL_MATCH: 0.30,       // Match between student skills and required skills
-  PEER_BEHAVIOR: 0.15,     // Collaborative filtering (what similar students liked)
+  INTEREST_MATCH: 0.45,    // Pure match between user interests and event tags
+  SKILL_MATCH: 0.40,       // Boosted weight for student skills
+  PAST_HISTORY: 0.10,      // Reduced weight to focus on profile fit
   URGENCY: 0.05            // Small boost for upcoming events
 };
 
 /**
  * Calculates a similarity score between two sets of tags using Jaccard Index
  */
-function calculateJaccardSimilarity(setA, setB) {
-  if (!setA.length || !setB.length) return 0;
-  const sA = new Set(setA.map(t => t.toLowerCase()));
-  const sB = new Set(setB.map(t => t.toLowerCase()));
-  const intersection = new Set([...sA].filter(x => sB.has(x)));
-  const union = new Set([...sA, ...sB]);
-  return intersection.size / union.size;
-}
-
-/**
- * Advanced Cosine Similarity for tag matching
- */
-function calculateCosineSimilarity(userTags, eventTags) {
-  if (!userTags || !eventTags || userTags.length === 0 || eventTags.length === 0) return 0;
+function calculateSkillOverlap(userSkills, eventRequiredSkills) {
+  if (!eventRequiredSkills || !eventRequiredSkills.length) return 1.0; // No requirements = full fit
+  if (!userSkills.length) return 0;
   
-  // Build a unique tag universe
-  const universe = Array.from(new Set([...userTags, ...eventTags]));
+  const userSet = new Set(userSkills.map(t => t.toLowerCase()));
+  const requiredSet = new Set(eventRequiredSkills.map(t => t.toLowerCase()));
   
-  const v1 = universe.map(tag => userTags.includes(tag) ? 1 : 0);
-  const v2 = universe.map(tag => eventTags.includes(tag) ? 1 : 0);
+  const intersectionSize = [...requiredSet].filter(x => userSet.has(x)).length;
   
-  let dotProduct = 0;
-  let mA = 0;
-  let mB = 0;
-  
-  for (let i = 0; i < v1.length; i++) {
-    dotProduct += v1[i] * v2[i];
-    mA += v1[i] * v1[i];
-    mB += v2[i] * v2[i];
-  }
-  
-  mA = Math.sqrt(mA);
-  mB = Math.sqrt(mB);
-  
-  if (mA === 0 || mB === 0) return 0;
-  return dotProduct / (mA * mB);
+  // Return ratio of required skills that the user has
+  return intersectionSize / requiredSet.size;
 }
 
 const DOMAIN_TO_TAGS = {
@@ -69,19 +44,19 @@ const DOMAIN_TO_TAGS = {
  * Calculates a personal match score for an event
  */
 export function calculateEventAffinity(event, preferences = {}) {
-  const { 
-    interests = [], 
-    skills = [], 
-    id: userId = '' 
+  const {
+    interests = [],
+    skills = [],
+    historicalDomains = {}
   } = preferences;
 
   // Derive event profile from title, desc, and eventType
   const derivedCategory = autoCategorizEvent(event.title || '', event.description || '');
   const eventKeywords = `${event.title} ${event.description} ${event.eventType}`.toLowerCase();
-  
+
   let interestScore = 0;
-  
-  // Scoring against domains/categories
+
+  // 1. Interest Matching (Content Filtering)
   const lowerInterests = interests.map(i => i.toLowerCase());
   if (lowerInterests.includes(derivedCategory.primary)) {
     interestScore += 0.7; // Strong match for primary category
@@ -102,22 +77,20 @@ export function calculateEventAffinity(event, preferences = {}) {
       rawTagHits++;
     }
   });
-  
-  // Normalize tag hits
-  const tagScore = Math.min(rawTagHits / 3, 1.0); // max 1.0
-  interestScore = Math.min(interestScore + (tagScore * 0.4), 1.0); // Boost by implicit tags
 
-  // 2. Skill Alignment (Jaccard Match of Skills vs Required Skills)
-  const skillScore = calculateJaccardSimilarity(skills, event.required_skills || []);
+  const tagScore = Math.min(rawTagHits / 3, 1.0); 
+  interestScore = Math.min(interestScore + (tagScore * 0.4), 1.0); 
 
-  // 3. Peer Behavior (Collaborative Filtering boost)
-  let peerBoost = 0;
-  if (userId) {
-    const eventId = event.id;
-    const historyData = attendanceHistory[userId] || {};
-    // If the user has a history of high ratings for this domain, boost it
-    const domainMatch = event.domain?.toLowerCase().includes(interests[0]?.toLowerCase());
-    peerBoost = domainMatch ? 0.5 : 0;
+  // 2. Skill Alignment (Ratio of required skills the student possesses)
+  const skillScore = calculateSkillOverlap(skills, event.required_skills || event.skills || []);
+
+  // 3. Past History Boost (Dynamic from Backend joinedEvents)
+  let historyBoost = 0;
+  const thisCategory = derivedCategory.primary;
+  if (thisCategory && historicalDomains[thisCategory]) {
+    // If they've attended 3 or more events in this category, give maximum boost
+    const attendCount = historicalDomains[thisCategory];
+    historyBoost = Math.min(attendCount / 3, 1.0);
   }
 
   // 4. Urgency Boost (Time-based decay)
@@ -126,13 +99,13 @@ export function calculateEventAffinity(event, preferences = {}) {
     const eventDate = new Date(event.date);
     const diffDays = (eventDate - new Date()) / (1000 * 60 * 60 * 24);
     if (diffDays >= 0 && diffDays <= 3) urgencyBoost = 1.0;
-  } catch(e) {}
+  } catch (e) { }
 
   // Final Hybrid Calculation
   const finalScore = (
     (interestScore * WEIGHTS.INTEREST_MATCH) +
     (skillScore * WEIGHTS.SKILL_MATCH) +
-    (peerBoost * WEIGHTS.PEER_BEHAVIOR) +
+    (historyBoost * WEIGHTS.PAST_HISTORY) +
     (urgencyBoost * WEIGHTS.URGENCY)
   );
 
@@ -144,11 +117,25 @@ export function calculateEventAffinity(event, preferences = {}) {
  */
 export function rankEvents(events, userProfile) {
   if (!events) return [];
+
+  // Calculate historical domain preferences based on real joinedEvents array
+  const joinedEventIds = userProfile?.joinedEvents || [];
+  const historicalDomains = {};
   
+  if (joinedEventIds.length > 0) {
+    const pastEvents = events.filter(e => joinedEventIds.includes(e.id));
+    pastEvents.forEach(e => {
+       const cat = autoCategorizEvent(e.title || '', e.description || '').primary;
+       if (cat) {
+         historicalDomains[cat] = (historicalDomains[cat] || 0) + 1;
+       }
+    });
+  }
+
   const normalizedProfile = {
     interests: userProfile?.interests || [],
     skills: userProfile?.skills || [],
-    id: userProfile?.id || ''
+    historicalDomains // Pass the calculated history down to the engine
   };
 
   return events

@@ -3,7 +3,9 @@ const router = express.Router();
 const { notifyByEvent, sendEventCatalogue, sendWhatsAppMessage, getRegistration } = require('./whatsappService');
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 // ─── Send event catalogue to a phone number ───
 router.post('/catalogue', async (req, res) => {

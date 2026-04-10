@@ -97,33 +97,31 @@ body:not([data-theme='light']) {
 
 /* --- THEME: AERO (LIGHT) --- */
 body[data-theme='light'] {
-  --bg-primary: #f8fafc;
-  --bg-tertiary: #f1f5f9;
+  --bg-primary: #f0f4f9; /* Premium slate-blue tinted background */
+  --bg-secondary: #e5ebf3; /* Slightly deeper tint for sidebars/menus */
+  --bg-tertiary: #dae2ed;
   --bg-surface: #ffffff;
-  --bg-card: rgba(255, 255, 255, 0.7);
-  --bg-card-hover: rgba(255, 255, 255, 0.9);
-  --bg-glass: rgba(248, 250, 252, 0.8);
-  --bg-elevated: #ffffff;  /* --- Aero (Professional Zinc Light) --- */
-  --bg-color: #fafafa;
-  --surface-color: #ffffff;
-  --surface-hover: #f4f4f5;
-  --text-primary: #09090b;
-  --text-secondary: #71717a;
-  --text-muted: #a1a1aa;
+  --bg-card: #ffffff;
+  --bg-card-hover: #ffffff;
+  --bg-glass: rgba(255, 255, 255, 0.85);
+  --bg-elevated: #ffffff;
   
-  --border-color: rgba(228, 228, 231, 0.8);
-  --glass-bg: rgba(255, 255, 255, 0.7);
-  --glass-border: rgba(228, 228, 231, 0.6);
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  /* Text with refined contrast */
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-tertiary: #64748b;
+  --text-muted: #94a3b8;
+  
+  --border-primary: rgba(30, 41, 59, 0.08); /* More subtle borders */
+  --border-secondary: rgba(30, 41, 59, 0.05);
+  
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.03), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-lg: 0 12px 24px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.02);
+  --shadow-xl: 0 24px 48px rgba(0, 0, 0, 0.06), 0 8px 16px rgba(0, 0, 0, 0.02);
 
-  --accent-glow: rgba(var(--accent-rgb), 0.12);
-  --scrollbar-thumb: rgba(9, 9, 11, 0.1);
-  
-  /* Additional Premium Light Utils */
-  --glass-border: rgba(255, 255, 255, 0.5);
+  --accent-glow: rgba(var(--accent-rgb), 0.1);
+  --scrollbar-thumb: rgba(15, 23, 42, 0.1);
 }
 
 /* --- ROLE-BASED ACCENTS [Theme Agnostic] --- */

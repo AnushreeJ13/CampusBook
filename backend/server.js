@@ -1,29 +1,15 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
-<<<<<<< HEAD
 const fs = require('fs');
 const path = require('path');
 const { getRecommendations } = require('./utils/recommendationEngine');
-=======
 const { createClient } = require('@supabase/supabase-js');
->>>>>>> 1bac6ff (whatsapp feature)
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Supabase client initialization
-const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!supabaseUrl || !supabaseServiceKey) {
-    console.error('❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing from .env');
-    process.exit(1);
-}
-
-const supabase = createClient(supabaseUrl, supabaseServiceKey);
-
-// Load .env.local manually for GROQ_API_KEY if process.env doesn't have it
+// Load .env.local manually so our backend has exactly what Vite has
 const envPath = path.join(__dirname, '..', '.env.local');
 if (fs.existsSync(envPath)) {
     const envContent = fs.readFileSync(envPath, 'utf8');
@@ -35,16 +21,27 @@ if (fs.existsSync(envPath)) {
     });
 }
 
+// Supabase client initialization
+const supabaseUrl = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+const supabaseServiceKey = process.env.VITE_SUPABASE_ANON_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!supabaseUrl || !supabaseServiceKey) {
+    console.error('❌ SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY missing from .env/.env.local');
+    process.exit(1);
+}
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-<<<<<<< HEAD
 const dataFile = path.join(__dirname, 'data.json');
 const studentsFile = path.join(__dirname, 'data', 'students.json');
 const eventsFile = path.join(__dirname, 'data', 'events.json');
 const attendanceFile = path.join(__dirname, 'data', 'attendance_history.json');
-=======
+
 // Import WhatsApp service
 let whatsappService;
 try {
@@ -53,7 +50,6 @@ try {
 } catch (e) {
     console.error('⚠️ WhatsApp service failed to load:', e.message);
 }
->>>>>>> 1bac6ff (whatsapp feature)
 
 const STATUS_LABELS = {
     submitted: 'Submitted',

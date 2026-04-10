@@ -24,6 +24,10 @@ export default function SocietyDashboard() {
 
   const totalAttendance = approved.reduce((acc, p) => acc + (p.attendeeCount || 0), 0);
   const avgAttendance = approved.length > 0 ? Math.round(totalAttendance / approved.length) : 0;
+  
+  // Calculate Reputation Score (Impact Credits)
+  const totalCredits = myProposals.reduce((acc, p) => acc + (p.awardedCredits || 0), 0);
+
 
   return (
     <div className="page-container" style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem' }}>
@@ -65,13 +69,12 @@ export default function SocietyDashboard() {
               <span className="text-xs font-bold text-slate-400 uppercase tracking-widest" style={{fontSize: '0.75rem', fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.1em'}}>Live Predictions</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1rem'}}>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem'}}>
                <div className="bg-indigo-50 p-6 rounded-3xl border border-indigo-100 group hover:shadow-lg transition-all" style={{padding: '1.5rem', background: '#f5f3ff', borderRadius: '1.5rem', border: '1px solid #e0e7ff', transition: 'all 0.3s'}}>
                   <TrendingUp className="text-indigo-600 mb-4" size={32} />
                   <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Reach Velocity</h3>
                   <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>
                     Your events average <strong>{avgAttendance}</strong> attendees. 
-                    {avgAttendance > 50 ? ' High engagement detected.' : ' Targeted push recommended.'}
                   </p>
                   <div className="w-full bg-indigo-200 h-1 rounded-full overflow-hidden" style={{width: '100%', background: '#e0e7ff', height: '0.25rem', borderRadius: '9999px', overflow: 'hidden'}}>
                     <div className="bg-indigo-600 h-full" style={{background: '#4f46e5', height: '100%', width: `${Math.min(100, (avgAttendance/200)*100)}%`}}></div>
@@ -80,12 +83,23 @@ export default function SocietyDashboard() {
                
                <div className="bg-emerald-50 p-6 rounded-3xl border border-emerald-100 group hover:shadow-lg transition-all" style={{padding: '1.5rem', background: '#ecfdf5', borderRadius: '1.5rem', border: '1px solid #d1fae5', transition: 'all 0.3s'}}>
                   <CheckCircle className="text-emerald-600 mb-4" size={32} />
-                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Auth Success Rate</h3>
+                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Auth Success</h3>
                   <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>
-                    You have a <strong>{approvalRate}%</strong> approval rate across across all verified venue requests.
+                    <strong>{approvalRate}%</strong> approval rate across verified venue requests.
                   </p>
                   <div className="w-full bg-emerald-200 h-1 rounded-full overflow-hidden" style={{width: '100%', background: '#d1fae5', height: '0.25rem', borderRadius: '9999px', overflow: 'hidden'}}>
                     <div className="bg-emerald-600 h-full" style={{background: '#059669', height: '100%', width: `${approvalRate}%`}}></div>
+                  </div>
+               </div>
+
+               <div className="bg-amber-50 p-6 rounded-3xl border border-amber-100 group hover:shadow-lg transition-all" style={{padding: '1.5rem', background: '#fffbeb', borderRadius: '1.5rem', border: '1px solid #fef3c7', transition: 'all 0.3s'}}>
+                  <Zap className="text-amber-600 mb-4" size={32} />
+                  <h3 className="font-black text-lg mb-1" style={{fontWeight: 900, fontSize: '1.125rem', margin: 0}}>Impact Credits</h3>
+                  <p className="text-sm text-slate-500 mb-4" style={{fontSize: '0.875rem', color: '#64748b', marginBottom: '1rem'}}>
+                    Reputation Score: <strong>{totalCredits}</strong>. Keep hosting top events!
+                  </p>
+                  <div className="w-full bg-amber-200 h-1 rounded-full overflow-hidden" style={{width: '100%', background: '#fde68a', height: '0.25rem', borderRadius: '9999px', overflow: 'hidden'}}>
+                    <div className="bg-amber-600 h-full" style={{background: '#d97706', height: '100%', width: `${Math.min(100, (totalCredits/1000)*100)}%`}}></div>
                   </div>
                </div>
             </div>

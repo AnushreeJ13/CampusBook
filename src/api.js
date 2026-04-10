@@ -1,4 +1,6 @@
-<<<<<<< HEAD
+/**
+ * Backend API layer for CampusBook
+ */
 import { 
     supabase, 
     saveProposal as supabaseSaveProposal,
@@ -13,12 +15,6 @@ import {
     markAttendance as supabaseMarkAttendance,
     saveUserProfile as supabaseSaveUserProfile
 } from './supabase';
-=======
-/**
- * Backend API layer for CampusBook
- */
-import { supabase } from './supabase';
->>>>>>> 1bac6ff (whatsapp feature)
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5001';
 
@@ -33,7 +29,7 @@ const fetchFromBackend = async (endpoint, options = {}) => {
         try {
             const err = await res.json();
             errMsg = err.error || err.message || errMsg;
-        } catch (e) {}
+        } catch (e) { }
         throw new Error(errMsg);
     }
     return res.json();
@@ -73,30 +69,17 @@ export const disableWhatsApp = async (userId) => {
 
 export const subscribeToCollection = (collectionName, callback) => {
     const fetchData = async () => {
-<<<<<<< HEAD
-        let query = supabase.from(collectionName).select('*');
-        
-        // Simple filter mapping
-        filters.forEach(f => {
-            // Placeholder for filter logic
-        });
-
-        const { data, error } = await query;
+        const { data, error } = await supabase.from(collectionName).select('*');
         if (error) {
             console.warn(`Supabase Error (${collectionName}):`, error.message);
-            callback([]); // Trigger fallback manually to prevent hanging UI
+            callback([]);
         } else {
             callback(data || []);
         }
-=======
-        const { data } = await supabase.from(collectionName).select('*');
-        if (data) callback(data);
->>>>>>> 1bac6ff (whatsapp feature)
     };
     fetchData();
-<<<<<<< HEAD
 
-    // 2. Subscribe to changes and re-fetch
+    // Subscribe to realtime changes and re-fetch
     const channelId = `pub-${collectionName}-${Math.random().toString(36).substring(2, 9)}`;
     const channel = supabase
         .channel(channelId)
@@ -109,7 +92,7 @@ export const subscribeToCollection = (collectionName, callback) => {
                 console.log(`Successfully subscribed to ${collectionName}`);
             }
         });
-    
+
     return () => {
         supabase.removeChannel(channel);
     };
@@ -123,9 +106,9 @@ export const saveProposal = async (proposal) => {
 // --- NOTIFICATIONS ---
 export const saveNotification = async (notification) => {
     const { userId, ...rest } = notification;
-    return await supabaseSaveNotification({ 
-        user_id: userId, 
-        ...rest 
+    return await supabaseSaveNotification({
+        user_id: userId,
+        ...rest
     });
 };
 
@@ -154,12 +137,6 @@ export const saveVenue = async (venue) => {
 
 export const deleteVenue = async (id) => {
     return await supabaseDeleteVenue(id);
-=======
-    const ch = supabase.channel(`public:${collectionName}`)
-        .on('postgres_changes', { event: '*', schema: 'public', table: collectionName }, fetchData)
-        .subscribe();
-    return () => supabase.removeChannel(ch);
->>>>>>> 1bac6ff (whatsapp feature)
 };
 
 // --- ATTENDANCE ---
@@ -181,6 +158,5 @@ export const saveUserProfile = async (profile) => {
 };
 
 // Legacy support
-export const syncBackend = async (data) => {};
+export const syncBackend = async (data) => { };
 export const fetchAllBackendData = async () => null;
-

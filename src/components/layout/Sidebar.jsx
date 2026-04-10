@@ -6,7 +6,8 @@ import {
   LayoutDashboard, MapPin, FileText, PlusCircle, ClipboardCheck,
   Bell, BarChart3, Users, ScrollText, Settings, LogOut, Eye,
   Building2, ChevronLeft, ChevronRight, RefreshCw, X,
-  Map, Calendar, Shield, QrCode, MessageCircle, Activity, Sparkles
+  Map, Calendar, Shield, QrCode, MessageCircle, Activity, Sparkles,
+  BookmarkCheck
 } from 'lucide-react';
 import { useState } from 'react';
 import UniflowLogo from '../UniflowLogo';
@@ -15,9 +16,10 @@ import './Sidebar.css';
 const MENU_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/nexus-insight', icon: Sparkles, label: 'Nexus Insight' },
     { to: '/events', icon: Calendar, label: 'Upcoming Events' },
-    { to: '/venues', icon: MapPin, label: 'Browse Venues' },
+    { to: '/nexus-insight', icon: Sparkles, label: 'Nexus Insight' },
+    { to: '/check-in', icon: QrCode, label: 'Attendance Scanner' },
+    { to: '/profile', icon: Settings, label: 'Profile and Interests' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -52,7 +54,8 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
   if (!user) return null;
 
-  const menuItems = MENU_CONFIG[user.role] || [];
+  const currentRole = user?.role?.toLowerCase() || '';
+  const menuItems = MENU_CONFIG[currentRole] || [];
 
   const handleLogout = () => {
     logout();
