@@ -162,7 +162,6 @@ export default function NexusInsight() {
                     <div className="item-label" style={{color: '#9ca3af'}}>{item.type} • {item.label}</div>
                   </div>
                   <ChevronRight className="item-arrow z-10" size={20} />
-                  <div className="card-scanner-line" style={{background: 'linear-gradient(90deg, transparent, var(--accent), transparent)', opacity: 0.8}} />
                 </Link>
               ))}
             </div>
