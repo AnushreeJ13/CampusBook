@@ -1,26 +1,24 @@
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { ROLES } from '../../utils/constants';
-import { LayoutDashboard, MapPin, PlusCircle, Bell, FileText, ClipboardCheck, BarChart3 } from 'lucide-react';
+import { LayoutDashboard, MapPin, PlusCircle, Bell, FileText, ClipboardCheck, BarChart3, Calendar, Search } from 'lucide-react';
 import './BottomNav.css';
 
 const NAV_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
-    { to: '/venues', icon: MapPin, label: 'Venues' },
-    { to: '/notifications', icon: Bell, label: 'Alerts' },
+    { to: '/events', icon: Calendar, label: 'Events' },
+    { to: '/venues', icon: Search, label: 'Search' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
     { to: '/proposals/new', icon: PlusCircle, label: 'Create' },
     { to: '/proposals', icon: FileText, label: 'Proposals' },
-    { to: '/notifications', icon: Bell, label: 'Alerts' },
   ],
   [ROLES.FACULTY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },
     { to: '/reviews', icon: ClipboardCheck, label: 'Reviews' },
     { to: '/proposals', icon: FileText, label: 'Proposals' },
-    { to: '/notifications', icon: Bell, label: 'Alerts' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Home' },

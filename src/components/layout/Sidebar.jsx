@@ -6,7 +6,7 @@ import {
   LayoutDashboard, MapPin, FileText, PlusCircle, ClipboardCheck,
   Bell, BarChart3, Users, ScrollText, Settings, LogOut, Eye,
   Building2, ChevronLeft, ChevronRight, RefreshCw, X,
-  Map, Calendar, Shield, QrCode, MessageCircle
+  Map, Calendar, Shield, QrCode, MessageCircle, Activity, Sparkles
 } from 'lucide-react';
 import { useState } from 'react';
 import UniflowLogo from '../UniflowLogo';
@@ -15,8 +15,9 @@ import './Sidebar.css';
 const MENU_CONFIG = {
   [ROLES.STUDENT]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { to: '/events', icon: Eye, label: 'Upcoming Events' },
-    { to: '/notifications', icon: Bell, label: 'Notifications' },
+    { to: '/nexus-insight', icon: Sparkles, label: 'Nexus Insight' },
+    { to: '/events', icon: Calendar, label: 'Upcoming Events' },
+    { to: '/venues', icon: MapPin, label: 'Browse Venues' },
   ],
   [ROLES.SOCIETY]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -29,7 +30,6 @@ const MENU_CONFIG = {
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/reviews', icon: ClipboardCheck, label: 'Pending Reviews' },
     { to: '/proposals', icon: FileText, label: 'All Proposals' },
-    { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
   [ROLES.ADMIN]: [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -39,7 +39,6 @@ const MENU_CONFIG = {
     { to: '/graph-insights', icon: Shield, label: 'Campus Insights' },
     { to: '/analytics', icon: BarChart3, label: 'Analytics' },
     { to: '/audit', icon: ScrollText, label: 'Audit Trail' },
-    { to: '/notifications', icon: Bell, label: 'Notifications' },
   ],
 };
 

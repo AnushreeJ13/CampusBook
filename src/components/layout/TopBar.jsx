@@ -2,10 +2,9 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useProposals } from '../../contexts/ProposalContext';
-import { useNotifications } from '../../contexts/NotificationContext.jsx';
 import { useTheme } from '../../contexts/ThemeContext';
 import { 
-  Search, Bell, Menu, X, Clock, 
+  Search, Menu, X, Clock, 
   Shield, Activity, Zap, Cpu, 
   ChevronDown, LogOut, Settings, User,
   Sun, Moon
@@ -16,15 +15,12 @@ export default function TopBar({ onMobileMenuToggle }) {
   const { user, logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const { proposals } = useProposals();
-  const { notifications, markAsRead, unreadCount } = useNotifications();
   const navigate = useNavigate();
 
   const [searchQuery, setSearchQuery] = useState('');
-  const [showNotifications, setShowNotifications] = useState(false);
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
-  const notifRef = useRef(null);
   const userMenuRef = useRef(null);
 
   useEffect(() => {
@@ -34,9 +30,6 @@ export default function TopBar({ onMobileMenuToggle }) {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (notifRef.current && !notifRef.current.contains(event.target)) {
-        setShowNotifications(false);
-      }
       if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
         setShowUserMenu(false);
       }
@@ -105,68 +98,6 @@ export default function TopBar({ onMobileMenuToggle }) {
             {currentTime.toLocaleDateString([], { weekday: 'short', month: 'short', day: '2-digit' })}
           </div>
         </div>
-
-        <div className="topbar-notif-wrapper" ref={notifRef}>
-          <button 
-            className={`topbar-notif-btn ${unreadCount > 0 ? 'has-unread' : ''}`}
-            onClick={() => setShowNotifications(!showNotifications)}
-          >
-            <Bell size={20} />
-            {unreadCount > 0 && <span className="topbar-notif-badge">{unreadCount}</span>}
-          </button>
-
-          {showNotifications && (
-            <div className="topbar-notif-panel forensic-panel animate-scale-in">
-              <div className="notif-panel-header">
-                <div className="flex items-center gap-2">
-                  <div className="terminal-dot"></div>
-                  <h3 className="notif-panel-title">INTEL_FEEDS [SEC_LEVEL_ALPHA]</h3>
-                </div>
-                <button className="dismiss-btn" onClick={() => markAsRead('all')}>// PURGE_ALL</button>
-              </div>
-              <div className="notif-panel-list custom-scrollbar">
-                {notifications.length > 0 ? (
-                  notifications.map(n => (
-                    <div key={n.id} className={`notif-item ${!n.read ? 'unread' : ''} alert-lvl-${n.type || 'info'}`}>
-                      <div className="notif-marker">
-                        <div className="marker-dot"></div>
-                        <div className="marker-line"></div>
-                      </div>
-                      <div className="notif-content">
-                        <div className="notif-meta">
-                          <span className="notif-type">{n.type === 'recommendation' ? 'ENGINE_PULSE' : 'SYS_ALERT'}</span>
-                          <span className="notif-time">{n.time}</span>
-                        </div>
-                        <div className="notif-body">
-                          <span className="notif-title">{n.title}</span>
-                          <p className="notif-message">{n.message}</p>
-                        </div>
-                        <div className="notif-footer">
-                          <span className="notif-hash">ID: {n.id?.toString().slice(0, 8) || 'DEF-001'}</span>
-                          <span className="notif-status">{n.read ? 'REPLICATED' : 'LIVE_FEED'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="notif-empty">
-                    <Zap size={24} className="empty-icon animate-pulse" />
-                    <span>NO_ACTIVE_FEEDS_DETECTED</span>
-                  </div>
-                )}
-              </div>
-              <div className="notif-panel-footer">
-                <Link to="/notifications" onClick={() => setShowNotifications(false)}>
-                  <div className="footer-link-content">
-                    <Activity size={10} />
-                    <span>OPEN_CENTRAL_LOGS</span>
-                  </div>
-                </Link>
-              </div>
-            </div>
-          )}
-        </div>
-
 
         <div className="topbar-user-wrapper" ref={userMenuRef}>
           <div className="topbar-user" onClick={() => setShowUserMenu(!showUserMenu)}>

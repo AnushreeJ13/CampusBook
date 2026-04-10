@@ -4,17 +4,13 @@ import { useProposals } from '../../contexts/ProposalContext';
 import { useVenues } from '../../contexts/VenueContext';
 import { useProfile } from '../../contexts/ProfileContext';
 import { PROPOSAL_STATUS } from '../../utils/constants';
-<<<<<<< HEAD
 import { rankEvents } from '../../utils/recommendationEngine';
-import { 
-  Calendar, MapPin, TrendingUp, Cpu, Map, Clock, 
-  ArrowRight, Activity, Zap, Shield, Sparkles, Target, AlertCircle, Bookmark, BookmarkCheck
-} from 'lucide-react';
-=======
 import WhatsAppWidget from '../../components/common/WhatsAppWidget';
 import { getAIRecommendations } from '../../utils/mlRecommender';
-import { Calendar, MapPin, TrendingUp, Cpu, Map, Clock, ArrowRight, Activity, Zap } from 'lucide-react';
->>>>>>> 1bac6ff (whatsapp feature)
+import {
+  Calendar, MapPin, TrendingUp, Cpu, Map, Clock,
+  ArrowRight, Activity, Zap, Shield, Sparkles, Target, AlertCircle, Bookmark, BookmarkCheck
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
 import IntelligenceTicker from '../../components/intelligence/IntelligenceTicker';
 import EventRecommendations from '../../components/intelligence/EventRecommendations';
@@ -31,7 +27,7 @@ export default function StudentDashboard() {
 
   // Rank events using the actual intelligence engine
   const rankedEvents = useMemo(() => {
-    const validEvents = proposals.filter(p => 
+    const validEvents = proposals.filter(p =>
       [PROPOSAL_STATUS.VENUE_BOOKED, PROPOSAL_STATUS.APPROVED].includes(p.status)
     );
     return rankEvents(validEvents, {
@@ -57,10 +53,10 @@ export default function StudentDashboard() {
       <div className="student-hero">
         <div className="student-blob student-blob-1" />
         <div className="student-blob student-blob-2" />
-        
+
         <div className="student-hero-content">
           <p className="student-greeting">
-            <Sparkles size={14} className="text-yellow-400" /> 
+            <Sparkles size={14} className="text-yellow-400" />
             {new Date().getHours() < 12 ? 'Good Morning!' : new Date().getHours() < 17 ? 'Good Afternoon!' : 'Good Evening!'}
           </p>
           <h1>Welcome Back, {user?.name || 'Student'}</h1>
@@ -69,42 +65,42 @@ export default function StudentDashboard() {
       </div>
 
 <<<<<<< HEAD
-      <div className="dashboard-content-inner">
-        {/* Campus Insights Grid */}
-        <div className="student-stats-grid">
-          <div className="student-stat">
-            <div className="student-stat-icon"><Zap size={24} /></div>
-            <div className="student-stat-info">
-              <span className="student-stat-value">{profile?.interests?.length || 0}</span>
-              <span className="student-stat-label">Active Interest Domains</span>
-            </div>
+  <div className="dashboard-content-inner">
+    {/* Campus Insights Grid */}
+    <div className="student-stats-grid">
+      <div className="student-stat">
+        <div className="student-stat-icon"><Zap size={24} /></div>
+        <div className="student-stat-info">
+          <span className="student-stat-value">{profile?.interests?.length || 0}</span>
+          <span className="student-stat-label">Active Interest Domains</span>
+        </div>
 =======
       {/* WhatsApp Notification Banner */}
-      <WhatsAppWidget />
+        <WhatsAppWidget />
 
-      {/* Stats - Clean SaaS Layout like Society */}
-      <div className="student-stats-grid">
-        <Link to="/events" className="student-stat stagger-1">
-          <div className="student-stat-icon" style={{background: '#eff6ff', color: '#3b82f6'}}>
-            <Calendar size={24} strokeWidth={2.5} />
+        {/* Stats - Clean SaaS Layout like Society */}
+        <div className="student-stats-grid">
+          <Link to="/events" className="student-stat stagger-1">
+            <div className="student-stat-icon" style={{ background: '#eff6ff', color: '#3b82f6' }}>
+              <Calendar size={24} strokeWidth={2.5} />
 >>>>>>> 1bac6ff (whatsapp feature)
-          </div>
-
-          <div className="student-stat">
-            <div className="student-stat-icon"><Target size={24} /></div>
-            <div className="student-stat-info">
-              <span className="student-stat-value">{profile?.joinedEvents?.length || 0}</span>
-              <span className="student-stat-label">Events Joined</span>
             </div>
-          </div>
 
-          <div className="student-stat">
-            <div className="student-stat-icon"><Map size={24} /></div>
-            <div className="student-stat-info">
-              <span className="student-stat-value">{sectorCount}</span>
-              <span className="student-stat-label">Total Locations</span>
+            <div className="student-stat">
+              <div className="student-stat-icon"><Target size={24} /></div>
+              <div className="student-stat-info">
+                <span className="student-stat-value">{profile?.joinedEvents?.length || 0}</span>
+                <span className="student-stat-label">Events Joined</span>
+              </div>
             </div>
-          </div>
+
+            <div className="student-stat">
+              <div className="student-stat-icon"><Map size={24} /></div>
+              <div className="student-stat-info">
+                <span className="student-stat-value">{sectorCount}</span>
+                <span className="student-stat-label">Total Locations</span>
+              </div>
+            </div>
         </div>
 
         <div className="dashboard-main-grid">
@@ -116,7 +112,7 @@ export default function StudentDashboard() {
             </div>
 
             {/* Neural AI Recommender Component */}
-            <div className="animate-card-entrance" style={{animationDelay: '0.45s'}}>
+            <div className="animate-card-entrance" style={{ animationDelay: '0.45s' }}>
               <EventRecommendations />
             </div>
 
@@ -128,85 +124,85 @@ export default function StudentDashboard() {
                   <h2 className="section-title">Live Event Feed</h2>
                 </div>
                 <Link to="/events" className="btn-primary-link">
-                  View All Events 
+                  View All Events
                   <ArrowRight size={16} className="arrow-icon" />
                 </Link>
               </div>
-              
+
               <div className="student-events-grid">
                 {rankedEvents.slice(0, 6).map((event, i) => {
                   const venue = venues.find(v => v.id === event.venueId);
                   return (
-                    <Link 
-                      key={event.id} 
+                    <Link
+                      key={event.id}
                       to={`/events/${event.id}`}
                       className="student-event-card"
-                      style={{animationDelay: `${0.6 + (i * 0.1)}s`}}
+                      style={{ animationDelay: `${0.6 + (i * 0.1)}s` }}
                     >
-                    <div className="card-scanner-line" />
-                    <div className="event-card-header flex justify-between items-center w-full">
-                      <div className="flex gap-sm">
-                        <div className="event-type-badge">EVENT</div>
-                        {event.affinityScore > 0.7 && (
-                          <span className="event-match-badge">
-                            <Sparkles size={12} /> Matched
-                          </span>
-                        )}
-                      </div>
-                      <button 
-                        className="save-event-btn" 
-                        onClick={(e) => {
-                          e.preventDefault();
-                          toggleSavedEvent(event.id);
-                        }}
-                        style={{ background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10, padding: '4px' }}
-                      >
-                        {user?.savedEvents?.includes(event.id) ? (
-                          <BookmarkCheck size={18} fill="var(--accent)" color="var(--accent)" />
-                        ) : (
-                          <Bookmark size={18} color="var(--text-tertiary)" className="hover:text-accent transition-colors" />
-                        )}
-                      </button>
-                    </div>
-
-                    <div className="event-card-poster" style={{ margin: '12px 0', borderRadius: '8px', overflow: 'hidden', height: '120px', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                      {event.posterUrl && event.posterUrl !== 'default-logo' ? (
-                        <img src={event.posterUrl} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{ opacity: 0.3, transform: 'scale(1.5)' }}>
-                          <UniflowLogo />
+                      <div className="card-scanner-line" />
+                      <div className="event-card-header flex justify-between items-center w-full">
+                        <div className="flex gap-sm">
+                          <div className="event-type-badge">EVENT</div>
+                          {event.affinityScore > 0.7 && (
+                            <span className="event-match-badge">
+                              <Sparkles size={12} /> Matched
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    
-                    <h3 className="student-event-title">{event.title}</h3>
-                    <span className="student-event-club">{event.clubName || 'General'}</span>
-                    
-                    <div className="student-event-details">
-                      <div className="detail-item">
-                        <Clock size={14} /> 
-                        {event.date}
+                        <button
+                          className="save-event-btn"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggleSavedEvent(event.id);
+                          }}
+                          style={{ background: 'transparent', border: 'none', cursor: 'pointer', zIndex: 10, padding: '4px' }}
+                        >
+                          {user?.savedEvents?.includes(event.id) ? (
+                            <BookmarkCheck size={18} fill="var(--accent)" color="var(--accent)" />
+                          ) : (
+                            <Bookmark size={18} color="var(--text-tertiary)" className="hover:text-accent transition-colors" />
+                          )}
+                        </button>
                       </div>
-                      <div className="detail-item">
-                        <MapPin size={14} /> 
-                        {venue?.name || 'TBD'}
+
+                      <div className="event-card-poster" style={{ margin: '12px 0', borderRadius: '8px', overflow: 'hidden', height: '120px', background: 'var(--surface)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {event.posterUrl && event.posterUrl !== 'default-logo' ? (
+                          <img src={event.posterUrl} alt={event.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{ opacity: 0.3, transform: 'scale(1.5)' }}>
+                            <UniflowLogo />
+                          </div>
+                        )}
                       </div>
+
+                      <h3 className="student-event-title">{event.title}</h3>
+                      <span className="student-event-club">{event.clubName || 'General'}</span>
+
+                      <div className="student-event-details">
+                        <div className="detail-item">
+                          <Clock size={14} />
+                          {event.date}
+                        </div>
+                        <div className="detail-item">
+                          <MapPin size={14} />
+                          {venue?.name || 'TBD'}
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                {rankedEvents.length === 0 && (
+                  <div className="empty-feed-state glass-pane">
+                    <div className="status-msg flex flex-col items-center gap-4">
+                      <AlertCircle size={48} className="text-dim opacity-30" />
+                      <span className="text-xs text-dim">No updates available</span>
                     </div>
-                  </Link>
-                );
-              })}
-              
-              {rankedEvents.length === 0 && (
-                <div className="empty-feed-state glass-pane">
-                  <div className="status-msg flex flex-col items-center gap-4">
-                    <AlertCircle size={48} className="text-dim opacity-30" /> 
-                    <span className="text-xs text-dim">No updates available</span>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
 
           <div className="main-right">
             <div className="grid-header">
@@ -242,5 +238,5 @@ export default function StudentDashboard() {
       </div>
 
     </div>
-  );
+    );
 }

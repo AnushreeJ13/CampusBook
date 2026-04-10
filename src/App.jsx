@@ -57,22 +57,15 @@ function DashboardRouter() {
   }
 }
 
-import { useNotifications } from './contexts/NotificationContext';
 import { useNavigate, useLocation } from 'react-router-dom';
+
+import NexusInsight from './pages/student/NexusInsight';
 
 function AppContent() {
   const { user, loading, selectedCollege, selectCollege } = useAuth();
-  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-
-  // Auto-redirect to notifications if too many updates (spam protection)
-  useEffect(() => {
-    if (user && !user.incomplete && unreadCount > 10 && location.pathname !== '/notifications') {
-      navigate('/notifications');
-    }
-  }, [user, unreadCount, location.pathname, navigate]);
 
   // Sync role with body class for the forensic theme
   useEffect(() => {
@@ -82,7 +75,6 @@ function AppContent() {
       // Add current role class
       document.body.classList.add(`role-${user.role.toLowerCase()}`);
     } else {
-      // Default to student or clean up if logged out
       Object.values(ROLES).forEach(r => document.body.classList.remove(`role-${r.toLowerCase()}`));
     }
   }, [user?.role]);
@@ -137,13 +129,13 @@ function AppContent() {
 
             {/* CampusOS Intelligence */}
             <Route path="/graph-insights" element={<ProtectedRoute allowedRoles={[ROLES.ADMIN]}><GraphInsights /></ProtectedRoute>} />
+            <Route path="/nexus-insight" element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]}><NexusInsight /></ProtectedRoute>} />
             <Route path="/attendance" element={<ProtectedRoute allowedRoles={[ROLES.SOCIETY, ROLES.ADMIN]}><AttendanceScanner /></ProtectedRoute>} />
             <Route path="/check-in" element={<ProtectedRoute allowedRoles={[ROLES.STUDENT]}><StudentCheckIn /></ProtectedRoute>} />
 
             {/* Shared */}
             <Route path="/events" element={<ProtectedRoute><UpcomingEvents /></ProtectedRoute>} />
             <Route path="/events/:id" element={<ProtectedRoute><EventDetail /></ProtectedRoute>} />
-            <Route path="/notifications" element={<ProtectedRoute><Notifications /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
             {/* Catch-all */}
@@ -154,7 +146,6 @@ function AppContent() {
       </div>
       <BottomNav />
     </div>
-
   );
 }
 
